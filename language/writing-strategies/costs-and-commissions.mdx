@@ -1,0 +1,12 @@
+---
+title: "Costs & Commissions"
+description: "How trading costs are modeled in a backtest"
+---
+
+Broker commissions are included in every backtest by default, so results are closer to what you'd actually see in live trading. You can also configure commissions in more detail for a specific scenario — for example, to match a particular broker's fee schedule.
+
+Combined with the platform's [unified backtest / live logic](/language/introduction/engine-overview), this is meant to close the usual gap between "looks great in a backtest" and "holds up in live trading": the same cost model applies in both places, rather than costs being an afterthought bolted on to the results screen.
+
+<Note>
+  A realistic cost model reduces — but doesn't eliminate — the gap between backtest and live results. No backtest reproduces the future with full accuracy.
+</Note>

@@ -1,0 +1,20 @@
+---
+title: "Under the Hood"
+description: "Performance and versioning inside the engine"
+---
+
+## Performance
+
+Calculations are accelerated using the **Polars** dataframe library, with select performance-critical components implemented in **Rust**. This keeps backtests fast even over long history windows and fine-grained (minute-level) data.
+
+## Parameters and versioning
+
+Strategy parameters can be defined separately from the strategy's logic, so they can be tuned — for optimization, for example — without touching the underlying code. Every change to a strategy's code is kept in version history, so a strategy is a project that evolves over time rather than a single frozen result.
+
+## No restriction on strategy type
+
+The engine doesn't constrain the kind of strategy you build. Portfolio strategies, pairs trading, momentum, or anything else — all run on the same underlying engine.
+
+<Note>
+  This page describes the engine's architecture at a conceptual level. For hands-on strategy examples and code, see [Writing Strategies](/language/writing-strategies/three-levels).
+</Note>

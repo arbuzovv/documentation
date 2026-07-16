@@ -1,0 +1,106 @@
+---
+title: "Glossary"
+description: "Key terms used throughout the Ziplime docs"
+---
+
+<AccordionGroup>
+  <Accordion title="Algorithmic trading">
+    Trading executed by a predefined algorithm (strategy) rather than manually.
+  </Accordion>
+
+  <Accordion title="Strategy">
+    A set of rules that drives trading decisions — when to buy and when to sell.
+  </Accordion>
+
+  <Accordion title="Backtest">
+    Testing a strategy against historical data to see how it would have performed in the past.
+  </Accordion>
+
+  <Accordion title="Portfolio, pairs, momentum strategy">
+    Common strategy types: managing a basket of instruments, trading a pair of assets against each other, or following market momentum. Ziplime supports any strategy type.
+  </Accordion>
+
+  <Accordion title="Benchmark">
+    A reference used to compare a strategy's return — for example, a market index.
+  </Accordion>
+
+  <Accordion title="Look-ahead bias">
+    A backtesting error where a strategy uses data that didn't exist yet at the moment of the trade, making the result unreliable.
+  </Accordion>
+
+  <Accordion title="Overfitting">
+    Tuning parameters so closely to past data that the result looks great historically but fails to generalize going forward.
+  </Accordion>
+
+  <Accordion title="Slippage">
+    The difference between the expected and the actual execution price of a trade.
+  </Accordion>
+
+  <Accordion title="Drawdown">
+    A decline in portfolio value from its peak; maximum drawdown is the deepest such decline.
+  </Accordion>
+
+  <Accordion title="Sharpe ratio, Calmar ratio, alpha, beta, profit factor">
+    Standard strategy-quality metrics that express risk-adjusted return and performance relative to the market.
+  </Accordion>
+
+  <Accordion title="Versioning">
+    Stored history of changes to a strategy's code — what changed and when.
+  </Accordion>
+
+  <Accordion title="Zipline">
+    An open-source backtesting engine, formerly the core of the Quantopian platform, and the foundation of Ziplime's engine.
+  </Accordion>
+
+  <Accordion title="Quantopian">
+    A well-known (now defunct) algorithmic trading platform built on Zipline.
+  </Accordion>
+
+  <Accordion title="MarketData.TA">
+    Ziplime's internal service that supplies market data to the platform.
+  </Accordion>
+
+  <Accordion title="Global Auth">
+    A shared authentication system — users stay signed in across Limex products.
+  </Accordion>
+
+  <Accordion title="Lime Trader (REST API)">
+    Lime Trading's programmatic REST API for order execution; also a standalone product for users who build their own trading systems. See [lime.co/rest-api-python-sdk](https://lime.co/rest-api-python-sdk/).
+  </Accordion>
+
+  <Accordion title="Lime Direct">
+    A separate Lime Trading product offering direct market access via FIX for technical teams that need minimal latency. See [lime.co/lime-direct-api-and-fix-protocol](https://lime.co/lime-direct-api-and-fix-protocol/).
+  </Accordion>
+
+  <Accordion title="High-frequency trading (HFT)">
+    Trading where the outcome depends on fractions of a second.
+  </Accordion>
+
+  <Accordion title="Market making">
+    Posting both buy and sell quotes to earn the spread between them; requires speed and infrastructure.
+  </Accordion>
+
+  <Accordion title="Fundamental data">
+    Company financial metrics: statements, valuation multiples.
+  </Accordion>
+
+  <Accordion title="Alternative data">
+    Non-traditional data sources that support trading decisions.
+  </Accordion>
+
+  <Accordion title="Freemium">
+    A model where basic access is free and advanced features are paid.
+  </Accordion>
+
+  <Accordion title="Serverless architecture">
+    A cloud model where resources scale automatically with load, with no servers to manage individually.
+  </Accordion>
+
+  <Accordion title="MQL4 / MQL5, Lua, Pine Script">
+    The strategy languages used by MetaTrader, Quik, and TradingView respectively; Ziplime's AI converts them to Python.
+  </Accordion>
+
+  <Accordion title="QuantConnect / Lean">
+    An algorithmic trading platform and its open-source engine; strategies can be migrated to Ziplime.
+  </Accordion>
+</AccordionGroup>

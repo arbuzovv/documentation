@@ -1,0 +1,70 @@
+---
+title: "FAQ"
+description: "Common questions about Ziplime"
+---
+
+<AccordionGroup>
+  <Accordion title="Do I need to know how to program?">
+    No. At the first level, describing your idea in the chat is enough — the agent team handles the code. As you grow, you can add code blocks, and later move to full programming if you want to.
+  </Accordion>
+
+  <Accordion title="How is this better than just asking a generic AI to write a strategy?">
+    Generic language models don't account for commissions and slippage, can suffer from look-ahead bias, and their backtest code doesn't carry over to live trading. You'd also still need an environment, data, and storage for results. Ziplime's value is the hedge-fund-grade tooling around the model: a correct engine, honest costs, protection against common mistakes, one shared logic for backtest and live trading, and data and metrics out of the box.
+  </Accordion>
+
+  <Accordion title="Is it free?">
+    Registration is free. The free tier has limits on the number of backtests and strategies, and gives access to simpler AI models. Higher tiers (Pro, Max) remove those limits and unlock more capable models. Specific pricing hasn't been published yet — the product is still in beta.
+  </Accordion>
+
+  <Accordion title="Can I lose money?">
+    Yes. Any live trading carries risk, and good backtest results don't guarantee future profit. A backtest is a research tool, not a promise of returns. The decision to run a strategy with real money is yours alone, and nothing here is individual investment advice.
+  </Accordion>
+
+  <Accordion title="How accurate are backtest results?">
+    The platform aims for realism: commissions are factored in by default and can be tuned, the engine guards against common mistakes, and backtest and live-trading logic are the same. That said, no backtest reproduces the future with full accuracy.
+  </Accordion>
+
+  <Accordion title="What about data security?">
+    All computation runs in the cloud, and results and data are stored inside the company's own environment. The platform uses serverless infrastructure.
+  </Accordion>
+
+  <Accordion title="I used another platform before — can I bring my strategies over?">
+    Yes. The AI can convert code from MetaTrader, Quik, TradingView, Quantopian, QuantConnect, and any existing Python code. The platform is deliberately not locked to one framework, so experienced traders don't lose their prior work.
+  </Accordion>
+
+  <Accordion title="Is it a black box, or can I see how the algorithm works?">
+    You always see your strategy's code and understand the logic it trades by. Unlike closed robo-advisors, there's no hidden logic — the algorithm is transparent.
+  </Accordion>
+
+  <Accordion title="Do I need to keep my computer on for the strategy to trade?">
+    No. In live trading, the algorithm runs on Ziplime's own servers. You don't need a separate server and you don't need to keep a browser tab open — it runs autonomously.
+  </Accordion>
+
+  <Accordion title="What kinds of strategies can I build?">
+    Anything — portfolio, pairs, momentum, and other approaches. There are no hard restrictions on strategy type.
+  </Accordion>
+
+  <Accordion title="Is this suitable for high-frequency trading?">
+    No. The engine isn't built for high-frequency trading or latency arbitrage, where response time is critical. The product targets meaningful strategies on one-minute-and-above intervals. High-frequency trading isn't accessible to retail users to begin with — it's the domain of large professional participants.
+  </Accordion>
+
+  <Accordion title="How is Ziplime different from Lime Direct and Lime Trader (REST API)?">
+    These serve different people. [Lime Direct](https://lime.co/lime-direct-api-and-fix-protocol/) is for technical teams that need minimal latency (HFT, market making, arbitrage). [Lime Trader (REST API)](https://lime.co/rest-api-python-sdk/) is a bare API for people who build everything themselves. Ziplime is a ready-made, AI-powered environment for quantitative strategies, for users who care about the idea and the math rather than execution speed. See [How We're Different](/guide/product/how-we-are-different).
+  </Accordion>
+
+  <Accordion title="What markets and instruments are supported?">
+    Ziplime covers ETFs and stocks. History is available from 2005, with a 15-minute market data delay.
+  </Accordion>
+
+  <Accordion title="Do I need a powerful computer?">
+    No. All computation runs in the cloud. Running locally is technically possible but requires setup and is meant for advanced users.
+  </Accordion>
+
+  <Accordion title="How do I go live with a strategy?">
+    From the interface, in one or two clicks: through the broker Lime Trading, via Lime Trader (REST API), with a short setup of trading parameters.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Risk and return are sensitive topics. Public materials shouldn't promise profit, offer guarantees, or cite specific return figures as a "typical result." Have legal review any public-facing copy about risk or returns.
+</Note>

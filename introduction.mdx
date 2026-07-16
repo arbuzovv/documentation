@@ -1,71 +1,119 @@
 ---
-title: Introduction
-description: "Welcome to the home of your new documentation"
+title: "ZipLime"
+description: "Introduction to web platform"
 ---
 
-<img
-  className="block dark:hidden"
-  src="/images/hero-light.png"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.png"
-  alt="Hero Dark"
-/>
+Ziplime is a cutting-edge platform designed to democratize algorithmic trading by providing ordinary users with the tools to create, backtest, analyze, and deploy trading strategies on real trading accounts. The platform integrates advanced AI capabilities to assist users in writing, debugging, optimizing, and enhancing their trading algorithms. Ziplime leverages the robust Zipline backtesting engine, which was once the core of Quantopian, and extends its functionality with additional features such as fundamental and alternative data. This documentation will guide you through the key features and functionalities of Ziplime.
 
-## Setting up
+## Key Features
 
-The first step to world-class documentation is setting up your editing environments.
+### AI-Powered Code Assistance
 
-<CardGroup cols={2}>
-  <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
-  </Card>
-  <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
-  >
-    Preview your changes before you push to make sure they're perfect
-  </Card>
-</CardGroup>
+Ziplime's built-in AI assists users in:
 
-## Make it yours
+* **Writing Code:** Generate trading algorithms based on user descriptions.
 
-Update your docs to your brand and add valuable content for the best user conversion.
+* **Debugging Code:** Identify and fix errors in the code.
 
-<CardGroup cols={2}>
-  <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
-  >
-    Customize your docs to your company's colors and brands
-  </Card>
-  <Card
-    title="Reference APIs"
-    icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
-  >
-    Automatically generate endpoints from an OpenAPI spec
-  </Card>
-  <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/content/components/accordions"
-  >
-    Build interactive features and designs to guide your users
-  </Card>
-  <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
-  >
-    Check out our showcase of our favorite documentation
-  </Card>
-</CardGroup>
+* **Optimizing Code:** Improve the performance and efficiency of trading strategies.
+
+* **Enhancing Code:** Provide suggestions for additional features and improvements.
+
+### Backtesting Engine
+
+Ziplime uses the Zipline backtesting engine, enhanced with:
+
+* **Daily and Minute Data:** Backtest strategies on both daily and minute-level data.
+
+* **Fundamental and Alternative Data:** Incorporate fundamental and alternative datasets for more comprehensive backtesting.
+
+### Cloud-Based Execution
+
+* **Cloud Backtesting:** Run backtests in the cloud using internal data.
+
+* **Results Visualization:** View backtest results through detailed graphs, tables, and reports.
+
+### Historical Backtest Management
+
+* **Save and Compare:** Save all backtests and compare historical performance with current strategies.
+
+### Data Coverage
+
+Ziplime supports backtesting on:
+
+* **US Stocks:** Comprehensive data on American equities (TOP 1500 stocks).
+
+* **ETFs:** Extensive coverage of Exchange-Traded Funds (TOP 500 ETFs).
+
+* **Futures:** Data on futures contracts for diversified strategy testing (TOP 50 futures).
+
+### &#xA;Creating a New Strategy
+
+1. **Describe Your Strategy:** Provide a detailed description of your trading strategy.
+
+2. **AI Code Generation:** Use the AI to generate the initial code for your strategy.
+
+3. **Review and Edit:** Review the generated code and make any necessary adjustments.
+
+### Running a Backtest
+
+1. **Select Data:** Choose the dataset (daily, minute, fundamental, or alternative) for your backtest.
+
+2. **Run Backtest:** Execute the backtest in the cloud.
+
+3. **Analyze Results:** Examine the results through interactive graphs, tables, and reports.
+
+### Managing Backtests
+
+1. **Save Backtest:** Save the backtest results for future reference.
+
+2. **Compare Backtests:** Compare the performance of different backtests to evaluate strategy improvements.
+
+## Example Workflow
+
+### Step 1: Strategy Description
+
+```
+I want to create a momentum-based trading strategy
+that buys stocks that have increased by more than 5%
+in the last 10 days and sells them after a 10% gain
+or a 5% loss.
+```
+
+### Step 2: AI Code Generation
+
+<CodeGroup>
+  ```python zipline.py
+  from zipline.api import order, record, symbol
+
+  def initialize(context):
+      context.lookback = 10
+      context.gain_threshold = 0.10
+      context.loss_threshold = -0.05
+
+  def handle_data(context, data):
+      for stock in context.portfolio.positions:
+          current_price = data.current(stock, 'price')
+          historical_prices = data.history(stock, 'price', bar_count=context.lookback, frequency='1d')
+          price_change = (current_price - historical_prices[0]) / historical_prices[0]
+          
+          if price_change > 0.05:
+              order(stock, 1)
+          elif price_change > context.gain_threshold or price_change < context.loss_threshold:
+              order(stock, -1)
+  ```
+</CodeGroup>
+
+### Step 3: Running the Backtest
+
+1. **Select Data:** Choose daily data for US stocks.
+
+2. **Run Backtest:** Execute the backtest in the cloud.
+
+3. **Analyze Results:** Review the performance metrics and visualizations.
+
+### Step 4: Saving and Comparing
+
+1. **Save Backtest:** Save the backtest results.
+
+2. **Compare Backtests:** Compare with previous backtests to assess strategy improvements.

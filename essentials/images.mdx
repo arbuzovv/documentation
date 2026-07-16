@@ -1,59 +1,30 @@
 ---
-title: 'Images and Embeds'
-description: 'Add image, video, and other HTML elements'
-icon: 'image'
+title: "Video Tutorials"
+icon: "image"
 ---
 
-<img
-  style={{ borderRadius: '0.5rem' }}
-  src="https://mintlify-assets.b-cdn.net/bigbend.jpg"
-/>
+To help you get started with writing trading strategies using Zipline, there is a wealth of video resources available online. These tutorials cover everything from the basics of algorithmic trading to advanced strategy development techniques. They include step-by-step guides on using Zipline, both as a standalone tool and within the context of Quantopian, its original platform.
 
-## Image
+#### Why Watch Video Tutorials?
 
-### Using Markdown
+* **Visual Learning**: Video tutorials provide a visual and auditory learning experience, which can be more effective for many users compared to reading text-based guides.
 
-The [markdown syntax](https://www.markdownguide.org/basic-syntax/#images) lets you add images using the following code
+* **Step-by-Step Guidance**: Videos often break down complex concepts into manageable steps, making it easier for you to follow along and implement strategies.
 
-```md
-![title](/path/image.jpg)
-```
+* **Diverse Topics**: The range of topics covers everything from the fundamentals of using Zipline to specific strategy implementations and optimizations.
 
-Note that the image file size must be less than 5MB. Otherwise, we recommend hosting on a service like [Cloudinary](https://cloudinary.com/) or [S3](https://aws.amazon.com/s3/). You can then use that URL and embed.
+#### Recommended Video Tutorial
 
-### Using Embeds
 
-To get more customizability with images, you can also use [embeds](/writing-content/embed) to add images
+One highly recommended video to start with is [“Getting Started with Algorithmic Trading using Zipline and Quantopian”](https://www.youtube.com/watch?v=wu0y0Szx4Mg). This tutorial provides an excellent introduction to the basics of algorithmic trading and how to use Zipline to backtest your strategies effectively.
 
-```html
-<img height="200" src="/path/image.jpg" />
-```
+These resources are invaluable for both beginners and experienced traders looking to refine their algorithmic trading skills and make the most of the Ziplime platform.
 
-## Embeds and HTML elements
+***
 
-<iframe
-  width="560"
-  height="315"
-  src="https://www.youtube.com/embed/4KzFe50RQkQ"
-  title="YouTube video player"
-  frameBorder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen
-  style={{ width: '100%', borderRadius: '0.5rem' }}
-></iframe>
+
+
+
+<iframe width="560" height="315" src="https://www.youtube.com/watch?v=wu0y0Szx4Mg" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ width: '100%', borderRadius: '0.5rem' }} />
 
 <br />
-
-<Tip>
-
-Mintlify supports [HTML tags in Markdown](https://www.markdownguide.org/basic-syntax/#html). This is helpful if you prefer HTML tags to Markdown syntax, and lets you create documentation with infinite flexibility.
-
-</Tip>
-
-### iFrames
-
-Loads another HTML page within the document. Most commonly used for embedding videos.
-
-```html
-<iframe src="https://www.youtube.com/embed/4KzFe50RQkQ"> </iframe>
-```

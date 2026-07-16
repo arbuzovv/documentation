@@ -1,0 +1,35 @@
+---
+title: "Product Features"
+description: "Timeframes, costs, migration, and transparency"
+---
+
+## Timeframes and history depth
+
+The minimum backtesting interval is one minute, with aggregation available at 2, 3, 4 minutes or any larger interval. Historical data goes back to **2005**, with a 15-minute market data delay.
+
+## Cost modeling
+
+Broker commissions are factored into backtests by default, so results are closer to reality. Commissions can also be configured in detail for a specific case.
+
+## Bringing strategies from other platforms
+
+Many users already have strategies built on other platforms. Ziplime's AI can convert that code into Python for its own engine. Supported sources include:
+
+- **MetaTrader** (MQL4 / MQL5)
+- **Quik** (Lua)
+- **TradingView** (Pine Script)
+- **Quantopian** and **Zipline**
+- **QuantConnect** and **Lean**
+- Any existing Python code
+
+This means the platform doesn't lock users into one framework — years of accumulated work can be brought over and continued inside Ziplime. See [Migrating to Ziplime](/language/migrating/from-metatrader) for platform-specific notes.
+
+## Algorithm transparency
+
+The trading algorithm in Ziplime is never a black box. You always see your strategy's code and understand the exact rules it trades by. This sets it apart from closed robo-advisors and signal services, where the logic is hidden.
+
+## Where Ziplime doesn't fit
+
+The engine is not built for ultra-fast strategies — high-frequency trading (HFT) and latency arbitrage, where fractions of a second decide the outcome. The engine is Python-based (with select components accelerated in Rust), which isn't sufficient for that class of problem.
+
+This is a deliberate positioning choice, not a shortcoming: Ziplime is about meaningful strategies on one-minute-and-above intervals, not a race for milliseconds. High-frequency trading isn't accessible to retail users in the first place — it's the domain of large professional participants. See [Limitations](/language/limitations/not-for-hft) for more detail.

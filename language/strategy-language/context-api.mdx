@@ -1,0 +1,141 @@
+---
+title: "Context API"
+description: "Look up assets, trade, schedule work, and inspect state through context"
+---
+
+`context` is the persistent algorithm object passed into lifecycle functions. Store your strategy state on it and call its methods to look up assets, trade, schedule work, inspect portfolio state, and configure controls.
+
+## Direct context style
+
+Prefer direct method calls on `context`:
+
+```python
+from ziplime.finance.execution import MarketOrder
+
+asset = await context.symbol("AAPL")
+await context.order_target_percent(asset, 0.25, style=MarketOrder())
+```
+
+Ziplime also exposes Zipline-style functions through `ziplime.api`, but `context` calls are clearer inside async algorithm code.
+
+## Asset lookup
+
+### `await context.symbol(symbol, mic=None, asset_type=AssetType.EQUITY)`
+
+Look up an exchange-listed asset by ticker.
+
+```python
+context.aapl = await context.symbol("AAPL")
+context.nflx = await context.symbol("NFLX@XNGS")
+context.msft = await context.symbol("MSFT", mic="XNGS")
+```
+
+If the symbol string contains `@`, the part after `@` is interpreted as the MIC exchange code.
+
+### Multiple symbols
+
+Recommended pattern:
+
+```python
+SYMBOLS = ["AAPL", "MSFT", "NVDA"]
+
+
+async def initialize(context):
+    context.assets = [await context.symbol(symbol) for symbol in SYMBOLS]
+```
+
+`context.symbols(*symbols)` exists for compatibility, but in the current implementation it returns a list of awaitables. If you use it, gather or await each item:
+
+```python
+import asyncio
+
+context.assets = await asyncio.gather(*context.symbols("AAPL", "MSFT", "NVDA"))
+```
+
+### `await context.symbols_universe(name, dt=None)`
+
+Load a named symbol universe from the asset service.
+
+```python
+context.q100us = await context.symbols_universe(name="Q100US")
+```
+
+If `dt` is omitted, Ziplime uses the current simulation datetime.
+
+### `await context.sid(sid)`
+
+Look up an asset by numeric SID.
+
+```python
+asset = await context.sid(12345)
+```
+
+### `await context.future_symbol(symbol, exchange_name=None)`
+
+Look up a futures contract.
+
+```python
+contract = await context.future_symbol("ESM25", exchange_name="XCME")
+```
+
+## Time and configuration
+
+### `context.get_datetime()`
+
+Return the current simulation datetime.
+
+```python
+now = context.get_datetime()
+```
+
+`context.simulation_dt` holds the same current simulation timestamp.
+
+### `context.algorithm.config`
+
+Access a typed algorithm config loaded from JSON.
+
+```python
+async def initialize(context):
+    cfg = context.algorithm.config
+    context.max_weight = cfg.max_weight
+```
+
+See [Algorithm file](/language/strategy-language/algorithm-file#algorithm-configuration) for the config class pattern.
+
+## Available methods
+
+| Method | Await? | Main use |
+| --- | --- | --- |
+| `symbol(symbol, mic=None, asset_type=...)` | Yes | Look up an equity or exchange asset. |
+| `symbols(*symbols, **kwargs)` | See note | Compatibility helper; prefer list comprehensions. |
+| `symbols_universe(name, dt=None)` | Yes | Load a named universe. |
+| `sid(sid)` | Yes | Look up by numeric asset id. |
+| `future_symbol(symbol, exchange_name=None)` | Yes | Look up a futures contract. |
+| `get_datetime()` | No | Current simulation datetime. |
+| `record(**kwargs)` | No | Add custom columns to performance output. |
+| `schedule_function(func, date_rule=None, time_rule=None, ...)` | No | Register a callback. |
+| `order(asset, amount, style, exchange_name=None)` | Yes | Buy or sell a fixed quantity. |
+| `order_percent(asset, percent, style, exchange_name=None)` | Yes | Trade an incremental percent of portfolio value. |
+| `order_target(asset, target, style, exchange_name=None)` | Yes | Target a share/contract quantity. |
+| `order_target_value(asset, target, style, exchange_name=None)` | Yes | Target a dollar exposure. |
+| `order_target_percent(asset, target, style, exchange_name=None)` | Yes | Target a portfolio weight. |
+| `get_open_orders(asset=None)` | No | Inspect open orders. |
+| `get_order(order_id, exchange_name)` | No | Retrieve a specific order. |
+| `cancel_order(order_id, exchange_name, relay_status=True)` | Yes | Cancel an open order. |
+| `set_long_only()` | No | Disallow short positions. |
+| `set_max_leverage(max_leverage)` | No | Cap account leverage. |
+| `set_max_position_size(...)` | No | Cap position size. |
+| `set_max_order_size(...)` | No | Cap single-order size. |
+| `set_max_order_count(max_count)` | No | Cap order count per day. |
+| `attach_pipeline(pipeline, name, ...)` | No | Register a pipeline during initialization. |
+| `pipeline_output(name)` | No | Read attached pipeline results after initialization. |
+
+## Exchange names
+
+Most order methods accept an optional `exchange_name`. If omitted, Ziplime uses the default exchange configured by the simulation runner. The examples in this repository commonly use `"LIME"` as the simulation exchange name.
+
+Use explicit exchange names when:
+
+- You run multiple exchanges.
+- You inspect or cancel an order with `get_order` or `cancel_order`.
+- You query portfolio helper methods by exchange.

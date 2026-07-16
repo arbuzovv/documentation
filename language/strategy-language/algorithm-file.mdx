@@ -1,0 +1,183 @@
+---
+title: "Algorithm File"
+description: "Lifecycle functions and file structure for a Ziplime strategy"
+---
+
+A Ziplime strategy is a Python file with lifecycle functions. You do not subclass anything. Define the functions Ziplime should call and keep your strategy state on `context`.
+
+## File skeleton
+
+```python
+from ziplime.finance.execution import MarketOrder
+
+
+async def initialize(context):
+    context.asset = await context.symbol("AAPL")
+    context.short_window = 20
+    context.long_window = 100
+
+
+async def handle_data(context, data):
+    history = await data.history(
+        assets=[context.asset],
+        fields=["close"],
+        bar_count=context.long_window,
+    )
+    closes = history["close"].to_numpy()
+
+    if len(closes) < context.long_window:
+        return
+
+    short_ma = closes[-context.short_window:].mean()
+    long_ma = closes.mean()
+
+    if short_ma > long_ma:
+        await context.order_target_percent(context.asset, 1.0, style=MarketOrder())
+    else:
+        await context.order_target_percent(context.asset, 0.0, style=MarketOrder())
+
+    context.record(short_ma=short_ma, long_ma=long_ma)
+```
+
+## `initialize(context)`
+
+Required for most strategies. Ziplime calls it once before the first bar.
+
+Use it to:
+
+- Look up assets.
+- Store constants and mutable state on `context`.
+- Register scheduled callbacks.
+- Configure trading controls.
+- Attach pipelines.
+- Read algorithm configuration from `context.algorithm.config`.
+
+```python
+async def initialize(context):
+    context.assets = [
+        await context.symbol("AAPL", mic="XNGS"),
+        await context.symbol("MSFT@XNGS"),
+    ]
+    context.max_weight = 0.25
+    context.days_seen = 0
+```
+
+Do not place orders in `initialize`. Order functions are only valid after initialization.
+
+## `handle_data(context, data)`
+
+Required for trading logic. Ziplime calls it on every bar according to the simulation `emission_rate`.
+
+Use it to:
+
+- Read current or historical values from `data`.
+- Calculate signals.
+- Check cash, positions, and open orders.
+- Place, target, or cancel orders.
+- Record metrics for the result table.
+
+```python
+async def handle_data(context, data):
+    current = await data.current(
+        assets=[context.asset],
+        fields=["close", "volume"],
+    )
+    close = current["close"][0]
+    volume = current["volume"][0]
+
+    if volume > 0 and close > context.entry_price:
+        await context.order_target_percent(context.asset, 1.0, style=MarketOrder())
+
+    context.record(close=close)
+```
+
+## `before_trading_start(context, data)`
+
+Optional. Ziplime calls it once per session before normal bar processing.
+
+In the current runtime this function is called synchronously, so define it with `def`, not `async def`.
+
+Use it to:
+
+- Reset daily state.
+- Read pipeline output.
+- Prepare a universe for the day.
+
+Do not place orders here. Order functions are explicitly disallowed during `before_trading_start`.
+
+```python
+def before_trading_start(context, data):
+    context.traded_this_session = False
+
+    if "universe" in getattr(context, "pipeline_names", set()):
+        context.pipeline_results = context.pipeline_output("universe")
+```
+
+## `analyze(context, perf)`
+
+Optional. Ziplime calls it once after the simulation finishes.
+
+In the current runtime this function is called synchronously, so define it with `def`, not `async def`.
+
+`perf` is the final performance table created by the executor. It includes the recorded variables you created with `context.record(...)`.
+
+```python
+def analyze(context, perf):
+    print(perf.tail())
+    print("Final portfolio value:", perf["portfolio_value"].iloc[-1])
+```
+
+## Storing state
+
+Use attributes on `context` for anything that must persist across bars:
+
+```python
+async def initialize(context):
+    context.last_rebalance_date = None
+    context.open_order_ids = []
+    context.assets = [await context.symbol("AAPL")]
+
+
+async def handle_data(context, data):
+    context.last_seen_dt = context.get_datetime()
+```
+
+Avoid relying on mutable module-level globals for strategy state. They are harder to reset between runs and harder to reason about in tests.
+
+## Algorithm configuration
+
+If your algorithm file defines a subclass of `BaseAlgorithmConfig`, Ziplime can load it from the JSON config passed to `run_simulation(..., config_file=...)`.
+
+```python
+from ziplime.config.base_algorithm_config import BaseAlgorithmConfig
+
+
+class AlgorithmConfig(BaseAlgorithmConfig):
+    symbols: list[str] = ["AAPL", "MSFT"]
+    target_weight: float = 0.5
+
+
+async def initialize(context):
+    cfg = context.algorithm.config
+    context.assets = [await context.symbol(symbol) for symbol in cfg.symbols]
+    context.target_weight = cfg.target_weight
+```
+
+Example JSON:
+
+```json
+{
+  "symbols": ["AAPL", "MSFT", "NVDA"],
+  "target_weight": 0.33
+}
+```
+
+## Common mistakes
+
+| Mistake | Fix |
+| --- | --- |
+| Defining `before_trading_start` as `async def` | Use plain `def before_trading_start(...)`. |
+| Defining `analyze` as `async def` | Use plain `def analyze(...)`. |
+| Forgetting `await` on `data.current`, `data.history`, or order functions | Add `await`. |
+| Placing orders in `initialize` or `before_trading_start` | Place orders in `handle_data` or scheduled callbacks. |
+| Calling target order functions repeatedly while old orders are still open | Check `context.get_open_orders(asset)` or design idempotent rebalance logic. |

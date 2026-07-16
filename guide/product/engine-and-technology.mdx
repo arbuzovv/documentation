@@ -1,0 +1,22 @@
+---
+title: "Engine & Technology"
+description: "What powers Ziplime's backtests"
+---
+
+Strategy backtesting is built on **Zipline**, the engine that once powered the well-known Quantopian platform. The engine is open source, and its code is maintained by the Ziplime team: [github.com/Limex-com/ziplime](https://github.com/Limex-com/ziplime). That gives it a track record most retail tools don't have — a technology that's been battle-tested over time, with the source available to inspect.
+
+## Beyond the standard engine
+
+On top of classic daily and minute-bar backtesting, the platform works with **fundamental data** (financial statements, multiples) and **alternative data** — a depth of analysis most retail tools don't offer.
+
+## Technical improvements
+
+The engine has been reworked for Ziplime's needs. Key functions are asynchronous, so a strategy behaves the same way on historical data as it does in live trading. Calculations are accelerated with the **Polars** library, and select components are implemented in **Rust**.
+
+## Working with strategies
+
+Each strategy's parameters can be pulled out and adjusted independently of its logic, which makes optimization easier. Strategy code is stored with full version history, so you can always see what changed and when — a strategy is an evolving project, not a one-off result.
+
+The platform doesn't restrict the type of strategy you can build — portfolio, pairs, momentum, or anything else.
+
+See [Engine Overview](/language/introduction/engine-overview) in the Backtesting Language section for more technical detail.

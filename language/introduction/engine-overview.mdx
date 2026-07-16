@@ -1,0 +1,17 @@
+---
+title: "Engine Overview"
+description: "The backtesting engine behind Ziplime strategies"
+---
+
+Ziplime strategies are written in **Python** and run on an engine built on **Zipline** — the backtesting engine that once powered the Quantopian platform. It's open source, and Ziplime maintains its own fork: [github.com/Limex-com/ziplime](https://github.com/Limex-com/ziplime).
+
+Unlike a proprietary scripting language, writing a Ziplime strategy means writing Python against the Ziplime/Zipline API. That has a practical benefit: any Python code you already have — your own logic, helper libraries, data processing — can, in principle, be used inside a strategy.
+
+## What the engine adds on top of stock Zipline
+
+- **Fundamental data** — company financials, valuation multiples.
+- **Alternative data** — non-traditional signals beyond price and volume.
+- **Asynchronous core** — key functions are async, so a strategy behaves consistently whether it's running on historical data or live.
+- **Unified backtest / live logic** — the same strategy code runs in both modes, so a backtest result is a meaningful preview of live behavior.
+
+See [Under the Hood](/language/introduction/under-the-hood) for the performance layer, and [Writing Strategies](/language/writing-strategies/three-levels) for how you actually build one.

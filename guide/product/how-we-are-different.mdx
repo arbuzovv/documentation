@@ -1,0 +1,33 @@
+---
+title: "How We're Different"
+description: "Ziplime vs. generic AI assistants and vs. other Lime Trading products"
+---
+
+## vs. generic AI assistants (ChatGPT, Cursor, Claude Code, and similar)
+
+The obvious question is: "can't I just ask ChatGPT to write me a strategy?" In practice, general-purpose language models run into systematic problems specifically in trading:
+
+- They tend to write naive brute-force logic that's slow and easy to get wrong.
+- They don't account for commissions and slippage, so results look good on paper but don't hold up in reality.
+- They silently use data that didn't exist yet at the time of the trade (look-ahead bias), which makes results unreliable.
+- They don't model how and in what order orders would actually be filled.
+- They produce backtest code that doesn't carry over to live trading without a rewrite.
+- They don't provide a working environment — no data, no charts, no storage of results, no execution.
+
+Ziplime's real value isn't the language model itself — it's **everything built around it**, to the standards of leading hedge funds: a correct engine, honest cost accounting, protection against common mistakes, one logic shared between backtest and live trading, ready-made data and metrics, and a team of specialized agents.
+
+In short: a generic AI assistant produces code that _looks_ like a strategy but can produce misleading results. Ziplime produces a methodologically sound result.
+
+## vs. other Lime Trading products (Lime Direct and Lime Trader)
+
+These three products for active trading serve different people and don't compete with each other.
+
+| Product | Who it's for | Main value | Typical use case |
+| --- | --- | --- | --- |
+| [**Lime Direct**](https://lime.co/lime-direct-api-and-fix-protocol/) | A narrow group of technical teams | Minimal latency, direct exchange access via FIX | High-frequency trading, market making, arbitrage |
+| [**Lime Trader (REST API)**](https://lime.co/rest-api-python-sdk/) | Users who build everything themselves | Flexibility and fine control, a "bare" API | Custom-built trading systems |
+| **Ziplime** | Retail investors and amateur quant traders | A ready-made AI-powered environment, low barrier to entry | Quantitative strategies on one-minute-and-above intervals |
+
+If a customer needs minimal latency, high-frequency trading, or market making, point them to **Lime Direct**. If they want to build everything from scratch on a bare API, point them to **Lime Trader (REST API)**. Ziplime fits users for whom the idea and the math of the strategy matter more than execution speed or infrastructure.
+
+Ziplime and Lime Trader audiences can overlap, but they're different types of users: Lime Trader users like to build everything by hand, while Ziplime users want the AI to own the environment and the code. Note that for live trading, Ziplime itself uses **Lime Trader (REST API)** under the hood — it just hides all of that complexity behind a simple interface.

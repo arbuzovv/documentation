@@ -1,37 +1,59 @@
 ---
-title: 'Code Blocks'
-description: 'Display inline code and code blocks'
-icon: 'code'
+title: "Backtester"
+description: "About zipline backtester"
+icon: "code"
 ---
 
-## Basic
+Ziplime integrates the Zipline backtester, a powerful and flexible tool originally developed as the core of the Quantopian platform. Zipline is designed for high-performance historical data testing, allowing users to evaluate their trading strategies with precision. Here's a look at the key features and syntax of the Zipline backtester:
 
-### Inline Code
+**Key Features**
 
-To denote a `word` or `phrase` as code, enclose it in backticks (`).
+1. **Event-Driven System**: Zipline operates on an event-driven system, simulating market dynamics by processing historical data in chronological order.
+
+2. **Pandas Integration**: It utilizes `pandas`, a popular data analysis library in Python, to handle time series data efficiently, making it easy to manipulate and analyze financial datasets.
+
+3. **Diverse Data Support**: Zipline supports a variety of data types, including daily and minute bar data, fundamental data, and alternative datasets.
+
+4. **Built-in Indicators and Metrics**: Users can incorporate a wide range of pre-built technical indicators and performance metrics to enhance strategy evaluation.
+
+5. **Modular and Extensible**: Its modular design allows users to extend its capabilities by adding custom functions and components, tailoring the backtester to specific requirements.
+
+#### Basic Syntax and Workflow
+
+To use the Zipline backtester, users typically write a Python script defining their strategy. Below is a basic outline of the syntax and workflow:
+
+* **Import Libraries**:
+  Start by importing necessary libraries, including Zipline and `pandas`
+
+```python
+import pandas as pd
+from zipline.api import order, record, symbol
+```
+
+* **Initialize Function:**
+  Define the `initialize()` function to set initial parameters and variables for the trading algorithm.
+
+```python
+def initialize(context):
+    context.asset = symbol('AAPL')
+    context.short_mavg = 50
+    context.long_mavg = 200
+```
+
+* **Handle Data Function**
+
+  * Implement the `handle_data()` function, which contains the logic executed on each iteration of the backtester, such as calculating indicators and placing orders.
+
+```python
+def handle_data(context, data):
+    short_mavg = data.history(context.asset, 'price', context.short_mavg, '1d').mean()
+    long_mavg = data.history(context.asset, 'price', context.long_mavg, '1d').mean()
+
+    if short_mavg > long_mavg:
+        order(context.asset, 10)
+    elif short_mavg < long_mavg:
+        order(context.asset, -10)
+
+    record(AAPL=data.current(context.asset, 'price'))
 
 ```
-To denote a `word` or `phrase` as code, enclose it in backticks (`).
-```
-
-### Code Block
-
-Use [fenced code blocks](https://www.markdownguide.org/extended-syntax/#fenced-code-blocks) by enclosing code in three backticks and follow the leading ticks with the programming language of your snippet to get syntax highlighting. Optionally, you can also write the name of your code after the programming language.
-
-```java HelloWorld.java
-class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}
-```
-
-````md
-```java HelloWorld.java
-class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}
-```
-````

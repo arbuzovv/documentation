@@ -1,0 +1,12 @@
+---
+title: "From Zipline & Quantopian"
+description: "The closest possible migration path"
+---
+
+If your strategy already runs on **Zipline** or was originally written for **Quantopian**, you're migrating to the platform Ziplime's own engine descends from. This is the most direct migration path available.
+
+Existing Zipline-style strategy code can usually be brought in with minimal changes — the main adjustments come from Ziplime's additions on top of stock Zipline: async execution, the unified backtest/live logic, and access to fundamental and alternative data. See [Engine Overview](/language/introduction/engine-overview) for what's been added.
+
+<Note>
+  Quantopian itself has been shut down for some time; if you're migrating old Quantopian research, expect to update deprecated API calls as part of the move.
+</Note>

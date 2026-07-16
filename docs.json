@@ -1,101 +1,146 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "ZIPLIME",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#CEFC31",
+    "light": "#CEFC31",
+    "dark": "#A6D91C"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "ZipLime Guide",
         "groups": [
           {
             "group": "Get Started",
             "pages": [
-              "introduction",
-              "quickstart",
-              "development"
+              "guide/getting-started/overview",
+              "guide/getting-started/how-it-works",
+              "guide/getting-started/registration"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Platform",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "guide/platform/ai-agent-team",
+              "guide/platform/three-levels",
+              "guide/platform/product-features",
+              "guide/platform/real-trading"
+            ]
+          },
+          {
+            "group": "Product",
+            "pages": [
+              "guide/product/two-environments",
+              "guide/product/engine-and-technology",
+              "guide/product/infrastructure-and-security",
+              "guide/product/how-we-are-different"
+            ]
+          },
+          {
+            "group": "Plans & Events",
+            "pages": [
+              "guide/plans/pricing-and-registration"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": [
+              "guide/resources/faq",
+              "guide/resources/glossary"
             ]
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Backtesting Language",
         "groups": [
           {
-            "group": "API Documentation",
+            "group": "Introduction",
             "pages": [
-              "api-reference/introduction"
+              "language/introduction/engine-overview",
+              "language/introduction/under-the-hood"
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Writing Strategies",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete"
+              "language/writing-strategies/three-levels",
+              "language/writing-strategies/timeframes-and-history",
+              "language/writing-strategies/costs-and-commissions"
+            ]
+          },
+          {
+            "group": "Strategy Language",
+            "pages": [
+              "language/strategy-language/overview",
+              "language/strategy-language/algorithm-file",
+              "language/strategy-language/context-api",
+              "language/strategy-language/market-data",
+              "language/strategy-language/orders",
+              "language/strategy-language/portfolio-and-recording",
+              "language/strategy-language/scheduling-and-controls",
+              "language/strategy-language/pipelines",
+              "language/strategy-language/zipline-migration"
+            ]
+          },
+          {
+            "group": "Migrating to Ziplime",
+            "pages": [
+              "language/migrating/from-metatrader",
+              "language/migrating/from-quik",
+              "language/migrating/from-tradingview",
+              "language/migrating/from-quantconnect",
+              "language/migrating/from-zipline-quantopian"
+            ]
+          },
+          {
+            "group": "Limitations",
+            "pages": [
+              "language/limitations/not-for-hft"
             ]
           }
         ]
       }
     ],
-    "global": {
+  "global": {
       "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
       ]
     }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:varbuzov@limex.com"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Platform",
+      "href": "https://ziplime.limex.com"
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/limex",
+      "github": "https://github.com/limex",
+      "linkedin": "https://linkedin.com/company/limex"
     }
+  },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "light": "#FFFFFF",
+      "dark": "#0A0A0A"
+    }
+  },
+  "fonts": {
+    "family": "Archivo"
+  },
+  "appearance": {
+    "default": "dark"
   }
 }

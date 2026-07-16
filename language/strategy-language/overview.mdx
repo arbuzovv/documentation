@@ -1,0 +1,118 @@
+---
+title: "Overview"
+description: "The language surface you use inside a Ziplime algorithm file"
+---
+
+This guide documents the language surface you use inside a Ziplime algorithm file. An algorithm file is ordinary Python, but Ziplime gives it a small event-driven API:
+
+- `context` stores your strategy state and exposes trading functions.
+- `data` gives access to current and historical market data.
+- Lifecycle functions tell Ziplime when to set up, trade, prepare a session, and analyze results.
+
+Most strategy work happens in two functions:
+
+```python
+async def initialize(context):
+    ...
+
+async def handle_data(context, data):
+    ...
+```
+
+## Mental model
+
+`initialize` is your setup block. Look up assets, store parameters, register scheduled callbacks, and configure controls there.
+
+`handle_data` is your trading block. It runs on every emitted bar, reads `data`, checks portfolio state, places orders, and records metrics.
+
+`before_trading_start` is an optional daily preparation hook. Use it for daily universe selection or pipeline output. Do not place orders there.
+
+`analyze` is an optional reporting hook after the backtest finishes.
+
+## Minimal algorithm
+
+```python
+from ziplime.finance.execution import MarketOrder
+
+SYMBOLS = ["AAPL", "MSFT", "NVDA"]
+
+
+async def initialize(context):
+    context.assets = [await context.symbol(symbol) for symbol in SYMBOLS]
+    context.has_rebalanced = False
+
+
+async def handle_data(context, data):
+    if context.has_rebalanced:
+        return
+
+    weight = 1.0 / len(context.assets)
+    for asset in context.assets:
+        await context.order_target_percent(
+            asset=asset,
+            target=weight,
+            style=MarketOrder(),
+        )
+
+    context.has_rebalanced = True
+    context.record(target_weight=weight, cash=context.portfolio.cash)
+```
+
+## Main objects
+
+| Object | Where you receive it | What it is for |
+| --- | --- | --- |
+| `context` | Every lifecycle function | Persistent strategy state and trading API |
+| `data` | `handle_data`, scheduled callbacks, `before_trading_start` | Current and historical data |
+| `context.portfolio` | Any time after initialization | Cash, portfolio value, positions, returns |
+| `context.account` | Any time after initialization | Account and leverage metrics |
+| `perf` | `analyze(context, perf)` | Final performance table |
+
+## Async rule of thumb
+
+Use `await` when calling functions that load data, look up assets, place orders, or cancel orders:
+
+```python
+from ziplime.finance.execution import MarketOrder
+
+asset = await context.symbol("AAPL")
+prices = await data.history(assets=[asset], fields=["close"], bar_count=20)
+order = await context.order_target_percent(asset, 0.25, style=MarketOrder())
+```
+
+In the current runtime:
+
+| Function | Should be async? | Notes |
+| --- | --- | --- |
+| `initialize(context)` | Yes | Ziplime awaits it. |
+| `handle_data(context, data)` | Yes | Ziplime awaits it on every bar. |
+| Scheduled callbacks | Yes | Ziplime awaits callbacks registered by `schedule_function`. |
+| `before_trading_start(context, data)` | No | Called synchronously. |
+| `analyze(context, perf)` | No | Called synchronously after the run. |
+
+## API map
+
+| Task | Primary functions |
+| --- | --- |
+| Look up assets | `context.symbol`, `context.sid`, `context.future_symbol`, `context.symbols_universe` |
+| Read current data | `await data.current(...)` |
+| Read trailing windows | `await data.history(...)` |
+| Place orders | `context.order`, `context.order_target`, `context.order_target_percent`, `context.order_percent`, `context.order_target_value` |
+| Inspect orders | `context.get_open_orders`, `context.get_order`, `context.cancel_order` |
+| Inspect portfolio | `context.portfolio`, `context.account`, portfolio helper methods |
+| Record metrics | `context.record(...)` |
+| Schedule callbacks | `context.schedule_function(...)`, `date_rules`, `time_rules` |
+| Configure controls | `context.set_long_only`, `context.set_max_leverage`, `context.set_max_position_size`, `context.set_max_order_size`, `context.set_max_order_count` |
+| Use pipelines | `context.attach_pipeline`, `context.pipeline_output` |
+| Migrate old Zipline code | [Migrating from Classic Zipline](/language/strategy-language/zipline-migration) |
+
+## Recommended reading order
+
+1. [Algorithm file](/language/strategy-language/algorithm-file)
+2. [Context API](/language/strategy-language/context-api)
+3. [Market data](/language/strategy-language/market-data)
+4. [Orders](/language/strategy-language/orders)
+5. [Portfolio and recording](/language/strategy-language/portfolio-and-recording)
+6. [Scheduling and controls](/language/strategy-language/scheduling-and-controls)
+7. [Pipelines](/language/strategy-language/pipelines)
+8. [Migrating from Classic Zipline](/language/strategy-language/zipline-migration)

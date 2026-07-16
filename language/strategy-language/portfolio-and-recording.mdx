@@ -1,0 +1,156 @@
+---
+title: "Portfolio & Recording"
+description: "Inspecting portfolio and account state, and recording custom metrics"
+---
+
+Use `context.portfolio` to inspect strategy performance and positions during a run. Use `context.account` for account-level leverage and margin fields. Use `context.record(...)` to write custom metrics into the final performance output.
+
+## Portfolio fields
+
+`context.portfolio` is a `Portfolio` object updated as the simulation runs.
+
+Common fields:
+
+| Field | Meaning |
+| --- | --- |
+| `starting_cash` | Starting cash balance |
+| `cash` | Current cash |
+| `portfolio_value` | Cash plus position value |
+| `pnl` | Profit and loss |
+| `returns` | Current return value |
+| `cash_flow` | Cash changes |
+| `positions_value` | Total market value of positions |
+| `positions_exposure` | Total exposure of positions |
+| `positions` | Nested position storage by exchange/account/asset in current runtime |
+
+Example:
+
+```python
+async def handle_data(context, data):
+    cash = context.portfolio.cash
+    value = context.portfolio.portfolio_value
+
+    if cash > 10_000:
+        ...
+
+    context.record(cash=cash, portfolio_value=value)
+```
+
+## Position helpers
+
+Prefer helper methods when you need amounts or values for one asset.
+
+### `await context.portfolio.get_asset_positions(asset, exchange_name=None, trading_account_id=None)`
+
+Return positions that match the underlying asset id. This can aggregate across exchange listings of the same underlying asset.
+
+```python
+positions = await context.portfolio.get_asset_positions(context.asset)
+```
+
+### `await context.portfolio.get_exchange_asset_positions(asset, exchange_name=None, trading_account_id=None)`
+
+Return positions that match the exact exchange asset SID.
+
+```python
+positions = await context.portfolio.get_exchange_asset_positions(
+    context.asset,
+    exchange_name="LIME",
+)
+```
+
+### Amount and value helpers
+
+```python
+amount = await context.portfolio.get_asset_positions_amount(context.asset)
+value = await context.portfolio.get_asset_positions_value(context.asset)
+
+exchange_amount = await context.portfolio.get_exchange_asset_positions_amount(
+    context.asset,
+    exchange_name="LIME",
+)
+exchange_value = await context.portfolio.get_exchange_asset_positions_value(
+    context.asset,
+    exchange_name="LIME",
+)
+```
+
+Use the `exchange_asset` versions when the exact listing matters. Use the `asset` versions when you want to treat listings of the same underlying asset together.
+
+## Position fields
+
+Each `Position` has:
+
+| Field | Meaning |
+| --- | --- |
+| `asset` | Exchange asset |
+| `amount` | Current amount |
+| `cost_basis` | Average cost per share or contract |
+| `last_sale_price` | Last synced price |
+| `last_sale_date` | Last sale datetime, when available |
+
+```python
+positions = await context.portfolio.get_asset_positions(context.asset)
+for position in positions:
+    print(position.amount, position.cost_basis, position.last_sale_price)
+```
+
+## Account fields
+
+`context.account` contains account and leverage metrics.
+
+Common fields:
+
+| Field | Meaning |
+| --- | --- |
+| `settled_cash` | Settled cash |
+| `buying_power` | Buying power |
+| `equity_with_loan` | Equity with loan value |
+| `total_positions_value` | Total position value |
+| `total_positions_exposure` | Total position exposure |
+| `available_funds` | Available funds |
+| `excess_liquidity` | Excess liquidity |
+| `leverage` | Gross leverage |
+| `net_leverage` | Net leverage |
+| `net_liquidation` | Net liquidation value |
+
+Example:
+
+```python
+from ziplime.finance.execution import MarketOrder
+
+if context.account.leverage > 1.5:
+    await context.order_target_percent(context.asset, 0.0, style=MarketOrder())
+```
+
+## Recording custom metrics
+
+### `context.record(*args, **kwargs)`
+
+Recorded values are added to the daily performance output and are available in `analyze`.
+
+```python
+context.record(
+    signal=signal,
+    short_ma=short_ma,
+    long_ma=long_ma,
+    cash=context.portfolio.cash,
+)
+```
+
+You can also pass alternating positional name/value pairs:
+
+```python
+context.record("signal", signal, "cash", context.portfolio.cash)
+```
+
+Prefer keyword arguments for readability.
+
+## Analyze recorded values
+
+```python
+def analyze(context, perf):
+    print(perf[["portfolio_value", "cash", "signal"]].tail())
+```
+
+`perf` is produced after the run. Its exact columns depend on the metrics set and on the names you recorded.

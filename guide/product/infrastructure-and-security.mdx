@@ -1,0 +1,32 @@
+---
+title: "Infrastructure & Security"
+description: "Data sourcing, cloud compute, and security principles"
+---
+
+All market data comes from **MarketData.TA**, Ziplime's internal data service. Having a proprietary source keeps data quality and consistency under control.
+
+## Core principles
+
+<CardGroup cols={2}>
+  <Card title="Nothing to set up" icon="plug">
+    Required libraries and data are already connected. There's nothing to install, no quotes to source, no environment to assemble.
+  </Card>
+
+  <Card title="Cloud compute" icon="cloud">
+    Backtests run on Ziplime's servers, so no powerful hardware is required on your end.
+  </Card>
+
+  <Card title="Serverless architecture" icon="layer-group">
+    Infrastructure scales automatically with load, with no idle servers to manage.
+  </Card>
+
+  <Card title="Data stays in-perimeter" icon="shield">
+    Results and data are stored inside the company's own environment — an important point for security-conscious users.
+  </Card>
+</CardGroup>
+
+Because the platform is serverless, cost scales with actual resource usage, which keeps the underlying economics predictable.
+
+## Trade attribution
+
+For broker-side visibility, trades placed through Ziplime via Lime Trader (REST API) carry a tag identifying them as originating from Ziplime. This makes it possible to measure the product's real contribution to trading activity.

@@ -1,0 +1,162 @@
+---
+title: "Market Data"
+description: "Reading current values and trailing history through the data object"
+---
+
+`data` is a `BarData` object passed to `handle_data`, scheduled callbacks, and `before_trading_start`. It gives you current values and trailing history from the market data source and optional custom data sources.
+
+Ziplime data access is async and returns Polars data frames.
+
+```python
+current = await data.current(assets=[asset], fields=["close"])
+history = await data.history(assets=[asset], fields=["close"], bar_count=20)
+```
+
+## Current values
+
+### `await data.current(assets, fields, data_source=None)`
+
+Read the latest available values at the current simulation timestamp.
+
+```python
+df = await data.current(
+    assets=[context.asset],
+    fields=["open", "high", "low", "close", "volume"],
+)
+
+close = df["close"][0]
+volume = df["volume"][0]
+```
+
+For multiple assets:
+
+```python
+df = await data.current(
+    assets=context.assets,
+    fields=["close", "volume"],
+)
+
+for row in df.iter_rows(named=True):
+    print(row.get("symbol"), row["close"], row["volume"])
+```
+
+The exact identifier columns depend on the loaded data source, but OHLCV fields are read by name.
+
+## Historical windows
+
+### `await data.history(assets, bar_count, frequency=timedelta(days=1), fields=None, data_source=None)`
+
+Read a trailing window ending before the current bar.
+
+```python
+import datetime
+
+hist = await data.history(
+    assets=[context.asset],
+    fields=["close"],
+    bar_count=50,
+    frequency=datetime.timedelta(days=1),
+)
+
+closes = hist["close"].to_numpy()
+sma_50 = closes.mean()
+```
+
+The current implementation calls the data source with `include_end_date=False`, so `history` is best used for completed previous bars. If your signal needs the current bar too, read it separately with `data.current(...)`.
+
+```python
+hist = await data.history(
+    assets=[context.asset],
+    fields=["close"],
+    bar_count=19,
+)
+current = await data.current(
+    assets=[context.asset],
+    fields=["close"],
+)
+
+window = list(hist["close"]) + [current["close"][0]]
+```
+
+## Fields
+
+Common market-data fields:
+
+| Field | Meaning |
+| --- | --- |
+| `"open"` | Bar open price |
+| `"high"` | Bar high price |
+| `"low"` | Bar low price |
+| `"close"` | Bar close price |
+| `"volume"` | Bar volume |
+| `"price"` | Last known price, when supported by the data source |
+| `"last_traded"` | Last traded datetime, when supported by the data source |
+
+Custom data bundles can expose additional fields. Pass the bundle name through `data_source` if you need a non-default source:
+
+```python
+fundamentals = await data.current(
+    assets=[context.asset],
+    fields=["market_cap", "pe_ratio"],
+    data_source="limex_us_fundamental_data",
+)
+```
+
+## Working with Polars
+
+Ziplime returns `polars.DataFrame`, so normal Polars operations apply.
+
+```python
+import polars as pl
+
+hist = await data.history(
+    assets=context.assets,
+    fields=["close", "volume"],
+    bar_count=20,
+)
+
+summary = hist.group_by("symbol").agg(
+    pl.col("close").mean().alias("mean_close"),
+    pl.col("volume").sum().alias("total_volume"),
+)
+```
+
+For one asset and one field, the most common extraction is:
+
+```python
+df = await data.current(assets=[asset], fields=["close"])
+close = df["close"][0]
+```
+
+## Data clock helpers
+
+`data.current_dt` returns the current simulation datetime.
+
+```python
+dt = data.current_dt
+```
+
+`data.current_session` returns the current trading session label.
+
+```python
+session = data.current_session
+```
+
+## Tradability checks
+
+`data.can_trade(assets)` exists for Zipline compatibility and is intended to check asset liveness, exchange hours, restrictions, and available price data.
+
+For portable strategy code in the current Ziplime runtime, prefer checking the data you actually need before ordering:
+
+```python
+current = await data.current(assets=[asset], fields=["close", "volume"])
+
+if current.height == 0:
+    return
+
+close = current["close"][0]
+volume = current["volume"][0]
+
+if close is None or volume <= 0:
+    return
+```

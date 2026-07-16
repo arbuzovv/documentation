@@ -1,0 +1,16 @@
+---
+title: "What Ziplime Is Not For"
+description: "Honest boundaries: high-frequency trading and latency arbitrage"
+---
+
+Ziplime is not built for **high-frequency trading (HFT)** or **latency arbitrage** — strategy classes where the outcome depends on fractions of a second.
+
+## Why
+
+The engine is built on Python, with select performance-critical components accelerated in Rust. That's fast enough for meaningful strategies on one-minute-and-above intervals, but it isn't built to compete on sub-second execution timing the way specialized HFT infrastructure is.
+
+## Why this isn't a real drawback for most users
+
+This is a positioning choice, not a gap to apologize for. High-frequency trading isn't accessible to retail users in the first place — it requires colocation, specialized hardware, and infrastructure investment that's economically out of reach outside large professional trading firms. Ziplime is built for the far larger set of strategies where the _idea_ and the _math_ matter more than microsecond execution: portfolio construction, momentum, mean reversion, pairs trading, and similar approaches on intraday-and-above timeframes.
+
+If your use case genuinely requires minimal latency or direct exchange access, that's what products like [**Lime Direct**](https://lime.co/lime-direct-api-and-fix-protocol/) are for — see [How We're Different](/guide/product/how-we-are-different) for the comparison.

@@ -1,0 +1,12 @@
+---
+title: "From QuantConnect & Lean"
+description: "Bringing Lean strategies to Ziplime"
+---
+
+If you have strategies built on **QuantConnect**, running on the open-source **Lean** engine, Ziplime's AI can help port that logic to its own Python/Zipline-based engine.
+
+Because both Lean and Ziplime use Python, migration is often more direct than from a non-Python platform — but the underlying APIs differ (data access, order placement, scheduling), so the agent team will still rewrite strategy internals against Ziplime's API rather than doing a literal copy-paste.
+
+<Note>
+  Compare backtest results before and after migration. Even with similar Python roots, differences in data handling and fill assumptions between Lean and Zipline can shift results.
+</Note>

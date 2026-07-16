@@ -1,0 +1,12 @@
+---
+title: "From MetaTrader"
+description: "Bringing MQL4 / MQL5 strategies to Ziplime"
+---
+
+If you have strategies written in **MQL4** or **MQL5** for MetaTrader, Ziplime's AI can convert that code into Python for its own engine.
+
+Describe your existing strategy (or paste the MQL code) in the chat, and the [Strategy Developer agent](/guide/platform/ai-agent-team) will translate the logic into Python, wire it up to Ziplime's data, and explain what changed along the way. From there, you can keep working at the [chat, code-block, or full-code level](/language/writing-strategies/three-levels) — whichever suits you.
+
+<Note>
+  Conversion carries over the strategy's _logic_. Because Ziplime models costs, fills, and timing differently from MetaTrader's tester, review backtest results after migration rather than assuming they'll match 1:1.
+</Note>

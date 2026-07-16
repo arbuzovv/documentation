@@ -1,88 +1,56 @@
 ---
-title: 'Markdown Syntax'
-description: 'Text, title, and styling in standard markdown'
-icon: 'text-size'
+title: "Prompting"
+description: "To harness the full potential of Ziplime's AI in creating algorithmic trading strategies, it's essential to write clear and detailed prompts. Here are some guidelines and examples to help you craft effective prompts for strategy development"
+icon: "text-size"
 ---
 
-## Titles
+**Guidelines for Writing Prompts**
 
-Best used for section headers.
+1. **Be Specific:** Clearly define the trading logic, including entry and exit conditions. Specify the type of assets or markets you're interested in.
 
-```md
-## Titles
-```
+2. **Include Timeframes:** Mention the desired timeframes for your strategy, whether it's intraday, daily, weekly, etc.
 
-### Subtitles
+3. **Define Indicators:** Specify any technical indicators or fundamental metrics you want to incorporate.
 
-Best use to subsection headers.
+4. **Clarify Objectives:** State your performance objectives, such as maximizing return, minimizing risk, or achieving a specific Sharpe ratio.
 
-```md
-### Subtitles
-```
+5. **Add Constraints:** Include any constraints such as risk tolerance, position limits, or transaction costs.
+
+6. **Iterate and Refine:** Start with a simple prompt and gradually refine it based on the AI's output and your strategic goals.
+
+#### Examples of Effective Prompts
+
+**Example 1: strategies based on technical indicators**
+
+<CodeGroup>
+  ```typescript Moving Average strategy
+  Create a strategy for trading U.S. stocks using a moving average crossover technique. 
+  Use a 50-day simple moving average (SMA) and a 200-day SMA. 
+  Enter a long position when the 50-day SMA crosses above the 200-day SMA, and 
+  exit the position when the 50-day SMA crosses below.
+  ```
+
+  ```typescript Momentum strategy
+  Develop a momentum strategy for ETFs. 
+  Identify ETFs with the top 10% highest relative strength over the past 6 months. 
+  Enter positions in these ETFs and rebalance the portfolio monthly. 
+  Target a risk level to maintain a maximum drawdown below 10%. 
+  Include transaction costs of 0.1% per trade.
+  ```
+</CodeGroup>
+
+**Example 2: strategies based on fundamental data**
+
+<CodeGroup>
+  ```typescript Earnings-Based Strategy
+  Design a strategy for futures trading based on earnings 
+  announcements. Enter a position in futures contracts 
+  if the company reports earnings that exceed analyst expectations 
+  by more than 10%. Exit the trade one day 
+  after the earnings announcement. Incorporate a stop-loss of 2% and take-profit of 5%.
+  ```
+</CodeGroup>
 
 <Tip>
-
-Each **title** and **subtitle** creates an anchor and also shows up on the table of contents on the right.
-
+  If you don't like result of strategy or if you have error while backtesting try to regenerate zipline engine code
 </Tip>
-
-## Text Formatting
-
-We support most markdown formatting. Simply add `**`, `_`, or `~` around text to format it.
-
-| Style         | How to write it   | Result          |
-| ------------- | ----------------- | --------------- |
-| Bold          | `**bold**`        | **bold**        |
-| Italic        | `_italic_`        | _italic_        |
-| Strikethrough | `~strikethrough~` | ~strikethrough~ |
-
-You can combine these. For example, write `**_bold and italic_**` to get **_bold and italic_** text.
-
-You need to use HTML to write superscript and subscript text. That is, add `<sup>` or `<sub>` around your text.
-
-| Text Size   | How to write it          | Result                 |
-| ----------- | ------------------------ | ---------------------- |
-| Superscript | `<sup>superscript</sup>` | <sup>superscript</sup> |
-| Subscript   | `<sub>subscript</sub>`   | <sub>subscript</sub>   |
-
-## Linking to Pages
-
-You can add a link by wrapping text in `[]()`. You would write `[link to google](https://google.com)` to [link to google](https://google.com).
-
-Links to pages in your docs need to be root-relative. Basically, you should include the entire folder path. For example, `[link to text](/writing-content/text)` links to the page "Text" in our components section.
-
-Relative links like `[link to text](../text)` will open slower because we cannot optimize them as easily.
-
-## Blockquotes
-
-### Singleline
-
-To create a blockquote, add a `>` in front of a paragraph.
-
-> Dorothy followed her through many of the beautiful rooms in her castle.
-
-```md
-> Dorothy followed her through many of the beautiful rooms in her castle.
-```
-
-### Multiline
-
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
-> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-
-```md
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
-> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-```
-
-### LaTeX
-
-Mintlify supports [LaTeX](https://www.latex-project.org) through the Latex component.
-
-<Latex>8 x (vk x H1 - H2) = (0,1)</Latex>
-
-```md
-<Latex>8 x (vk x H1 - H2) = (0,1)</Latex>
-```

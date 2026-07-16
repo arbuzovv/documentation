@@ -1,0 +1,195 @@
+---
+title: "Pipelines"
+description: "Computing cross-sectional factors and filters for universe selection"
+---
+
+Pipelines are an advanced way to compute cross-sectional factors and filters for many assets before your trading logic runs. They are useful for universe selection, ranking, and factor-based strategies.
+
+Pipeline support depends on having the right data loaders configured. The standard run path wires pricing data for `EquityPricing`; custom datasets require custom loaders.
+
+## Basic idea
+
+1. Build a `Pipeline` object.
+2. Attach it in `initialize`.
+3. Read its output after initialization, usually in `before_trading_start`.
+4. Use the output to choose assets or target weights.
+
+```python
+from ziplime.pipeline import Pipeline
+from ziplime.pipeline.data import EquityPricing
+from ziplime.pipeline.terms.factors import SimpleMovingAverage
+
+
+def make_pipeline():
+    sma_20 = SimpleMovingAverage(
+        inputs=[EquityPricing.close],
+        window_length=20,
+    )
+    return Pipeline(columns={"sma_20": sma_20})
+
+
+async def initialize(context):
+    context.attach_pipeline(make_pipeline(), "signals")
+
+
+def before_trading_start(context, data):
+    context.signals = context.pipeline_output("signals")
+```
+
+## Building a pipeline
+
+```python
+from ziplime.pipeline import Pipeline
+
+pipe = Pipeline(
+    columns={
+        "close": EquityPricing.close.latest,
+        "volume": EquityPricing.volume.latest,
+    }
+)
+```
+
+You can add columns after construction:
+
+```python
+pipe = Pipeline()
+pipe.add(EquityPricing.close.latest, "close")
+pipe.add(EquityPricing.volume.latest, "volume")
+```
+
+## Screens
+
+A screen filters which assets appear in the output.
+
+```python
+from ziplime.pipeline.terms.factors import AverageDollarVolume
+
+adv = AverageDollarVolume(window_length=20)
+screen = adv.top(100)
+
+pipe = Pipeline(
+    columns={"adv": adv},
+    screen=screen,
+)
+```
+
+You can also set a screen after construction:
+
+```python
+pipe.set_screen(screen, overwrite=True)
+```
+
+## Common factor examples
+
+### Latest OHLCV values
+
+```python
+pipe = Pipeline(columns={
+    "close": EquityPricing.close.latest,
+    "volume": EquityPricing.volume.latest,
+})
+```
+
+### Moving average
+
+```python
+from ziplime.pipeline.terms.factors import SimpleMovingAverage
+
+sma_50 = SimpleMovingAverage(
+    inputs=[EquityPricing.close],
+    window_length=50,
+)
+```
+
+### Returns
+
+```python
+from ziplime.pipeline.terms.factors import Returns
+
+returns_20 = Returns(window_length=20)
+```
+
+### Average dollar volume
+
+```python
+from ziplime.pipeline.terms.factors import AverageDollarVolume
+
+adv_20 = AverageDollarVolume(window_length=20)
+```
+
+## Ranking and filtering
+
+Factors support methods such as:
+
+| Method | Meaning |
+| --- | --- |
+| `factor.top(N)` | Keep the top N assets by factor value |
+| `factor.bottom(N)` | Keep the bottom N assets |
+| `factor.percentile_between(min, max)` | Keep assets between percentile bounds |
+| `factor.rank()` | Rank assets by value |
+| `factor.zscore()` | Cross-sectional z-score |
+| `factor.demean()` | Subtract cross-sectional mean |
+
+Example:
+
+```python
+momentum = Returns(window_length=60)
+liquid = AverageDollarVolume(window_length=20).top(500)
+top_momentum = momentum.top(50, mask=liquid)
+
+pipe = Pipeline(
+    columns={"momentum": momentum},
+    screen=top_momentum,
+)
+```
+
+## Reading pipeline output
+
+`context.pipeline_output(name)` is available after initialization.
+
+```python
+def before_trading_start(context, data):
+    output = context.pipeline_output("signals")
+    context.todays_assets = list(output.index)
+```
+
+The output type follows the pipeline engine and loader path. In Zipline-compatible paths it is a pandas DataFrame indexed by asset for the current session.
+
+## Custom factors
+
+Use `CustomFactor` for calculations that are not covered by built-in factors.
+
+```python
+import numpy as np
+
+from ziplime.pipeline import CustomFactor
+from ziplime.pipeline.data import EquityPricing
+
+
+class CloseRange(CustomFactor):
+    inputs = [EquityPricing.close]
+    window_length = 20
+
+    def compute(self, today, assets, out, close):
+        out[:] = np.nanmax(close, axis=0) - np.nanmin(close, axis=0)
+```
+
+Add it to a pipeline:
+
+```python
+pipe = Pipeline(columns={"close_range": CloseRange()})
+```
+
+## When to use pipelines
+
+Use pipelines when:
+
+- You need a daily ranked universe.
+- You compute the same cross-sectional factors for many assets.
+- You want to keep expensive universe-selection logic outside `handle_data`.
+
+Use `data.current` and `data.history` directly when:
+
+- You trade only a small fixed list of assets.
+- Your signal is simple and per-asset.
+- You do not need cross-sectional ranking.

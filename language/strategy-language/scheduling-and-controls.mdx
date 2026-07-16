@@ -1,0 +1,212 @@
+---
+title: "Scheduling & Controls"
+description: "Running callbacks at specific times and enforcing risk rules"
+---
+
+Use scheduled functions when your strategy should run at specific times instead of on every bar. Use controls to enforce simple risk rules before orders are accepted.
+
+## Scheduling callbacks
+
+### `context.schedule_function(func, date_rule=None, time_rule=None, half_days=True, calendar=None)`
+
+Register an async callback with the same signature as `handle_data`.
+
+```python
+from ziplime.finance.execution import MarketOrder
+from ziplime.utils.events import date_rules, time_rules
+
+
+async def initialize(context):
+    context.asset = await context.symbol("AAPL")
+    context.schedule_function(
+        rebalance,
+        date_rule=date_rules.week_start(),
+        time_rule=time_rules.market_open(minutes=30),
+    )
+
+
+async def rebalance(context, data):
+    await context.order_target_percent(context.asset, 1.0, style=MarketOrder())
+```
+
+In daily simulations, the `time_rule` is ignored by the current scheduler because there is only one bar per session. In minute simulations, both date and time rules matter.
+
+## Date rules
+
+Import from `ziplime.utils.events` or `ziplime.api`.
+
+```python
+from ziplime.utils.events import date_rules
+```
+
+| Rule | Meaning |
+| --- | --- |
+| `date_rules.every_day()` | Every trading day |
+| `date_rules.week_start(days_offset=0)` | Nth trading day of each week |
+| `date_rules.week_end(days_offset=0)` | N trading days before week end |
+| `date_rules.month_start(days_offset=0)` | Nth trading day of each month |
+| `date_rules.month_end(days_offset=0)` | N trading days before month end |
+
+Examples:
+
+```python
+date_rules.every_day()
+date_rules.week_start()
+date_rules.week_end(days_offset=1)
+date_rules.month_start(days_offset=2)
+date_rules.month_end()
+```
+
+## Time rules
+
+```python
+from ziplime.utils.events import time_rules
+```
+
+| Rule | Meaning |
+| --- | --- |
+| `time_rules.market_open(minutes=30)` | 30 minutes after market open |
+| `time_rules.market_close(minutes=15)` | 15 minutes before market close |
+| `time_rules.every_minute()` | Every minute in minute simulations |
+
+Offsets must be between 1 minute and 12 hours.
+
+Examples:
+
+```python
+time_rules.market_open()
+time_rules.market_open(hours=1)
+time_rules.market_close(minutes=30)
+```
+
+## Calendars
+
+`schedule_function` accepts `calendar=calendars.US_EQUITIES` or `calendar=calendars.US_FUTURES`.
+
+```python
+from ziplime.utils.events import calendars
+
+context.schedule_function(
+    rebalance,
+    date_rule=date_rules.month_end(),
+    time_rule=time_rules.market_close(minutes=30),
+    calendar=calendars.US_EQUITIES,
+)
+```
+
+If `calendar` is omitted, Ziplime uses the simulation trading calendar.
+
+## `before_trading_start` vs scheduled callbacks
+
+Use `before_trading_start` for daily preparation that should happen before trading logic.
+
+Use scheduled callbacks for trading actions that should occur at a specific session time.
+
+| Hook | Can place orders? | Async? | Common use |
+| --- | --- | --- | --- |
+| `before_trading_start` | No | No | Prepare universe, reset daily state, read pipeline output |
+| Scheduled callback | Yes | Yes | Rebalance, exit, risk reduction |
+| `handle_data` | Yes | Yes | Main per-bar trading logic |
+
+## Trading controls
+
+Controls are usually configured in `initialize`.
+
+### Long-only
+
+```python
+async def initialize(context):
+    context.set_long_only()
+```
+
+### Maximum leverage
+
+```python
+async def initialize(context):
+    context.set_max_leverage(1.5)
+```
+
+`run_simulation(..., max_leverage=...)` also registers a leverage control.
+
+### Maximum position size
+
+```python
+async def initialize(context):
+    context.set_max_position_size(
+        asset=None,
+        max_shares=1_000,
+        max_notional=50_000,
+    )
+```
+
+Pass an `asset` to limit only that asset. Use `asset=None` to apply the limit globally.
+
+### Maximum order size
+
+```python
+async def initialize(context):
+    context.set_max_order_size(
+        max_shares=500,
+        max_notional=25_000,
+    )
+```
+
+### Maximum order count
+
+```python
+async def initialize(context):
+    context.set_max_order_count(10)
+```
+
+### Error behavior
+
+Most controls accept `on_error="fail"` by default. Depending on the control implementation, `"fail"` raises when a rule is violated. Use non-failing modes only when you intentionally want violations to be logged or ignored by that control.
+
+## Asset restrictions
+
+`context.set_asset_restrictions(restrictions, on_error="fail")` registers a restricted list.
+
+Restriction classes are available from `ziplime.finance.asset_restrictions` and through `ziplime.api`:
+
+```python
+from ziplime.finance.asset_restrictions import StaticRestrictions
+
+
+async def initialize(context):
+    restricted = StaticRestrictions([context.restricted_asset])
+    context.set_asset_restrictions(restricted)
+```
+
+## Cancel policies
+
+Import from `ziplime.finance.cancel_policy` or `ziplime.api`.
+
+```python
+from ziplime.finance.cancel_policy import EODCancel, NeverCancel
+
+
+async def initialize(context):
+    context.set_cancel_policy(EODCancel(warn_on_cancel=True))
+```
+
+| Policy | Meaning |
+| --- | --- |
+| `EODCancel(warn_on_cancel=True)` | Cancel open orders at session end. |
+| `NeverCancel()` | Leave open orders active until filled or manually canceled. |
+
+## Commission and slippage setup
+
+Backtest fill models are most commonly configured in `run_simulation(...)`:
+
+```python
+from ziplime.finance.commission import PerDollar
+from ziplime.finance.slippage.fixed_basis_points_slippage import FixedBasisPointsSlippage
+
+result = await run_simulation(
+    ...,
+    equity_commission=PerDollar(cost=0.001),
+    equity_slippage=FixedBasisPointsSlippage(basis_points=5.0, volume_limit=0.1),
+)
+```
+
+Zipline-style `context.set_commission(...)` and `context.set_slippage(...)` are available during initialization. Use them only when your exchange/blotter setup is designed to read those context-level models. For standard `run_simulation` usage, prefer the explicit runner parameters.

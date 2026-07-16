@@ -1,0 +1,21 @@
+---
+title: "Timeframes & History Depth"
+description: "Supported intervals and how far back data goes"
+---
+
+## Timeframes
+
+The minimum backtest interval is **1 minute**. From there, you can aggregate to 2, 3, 4 minutes, or any larger interval you need — up to daily and beyond.
+
+## History depth
+
+Historical data is available from **2005** to the present.
+
+| Environment | Delay |
+| --- | --- |
+| Russia | No delay |
+| US | 15 minutes |
+
+<Warning>
+  The engine is not intended for strategies where outcomes depend on sub-second timing (high-frequency trading, latency arbitrage). See [Limitations](/language/limitations/not-for-hft).
+</Warning>

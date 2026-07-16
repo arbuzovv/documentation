@@ -1,33 +1,45 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "Ziplime Python Library"
+description: "Standalone solution"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+Ziplime extends the capabilities of the Zipline backtester by adding new functionality, including data ingestion for bundles and live trading directly from your local machine. This library provides advanced features for experienced users who wish to build and manage their own trading infrastructure.
 
-## Welcome
+## Key Features
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+### **Data Ingestion for Bundles**:
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+- Ziplime allows users to ingest data into bundles using an API key from Limex DataHub. This enables access to a wide range of financial datasets for backtesting. To obtain the necessary API key, visit [Limex DataHub](https://datahub.limex.com/)
+- After acquiring your key, set it as an environment variable:
 
-## Authentication
-
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
-
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
 ```
+export LIMEX_API_KEY=your_token
+```
+
+- You can then use commands to ingest data, such as:
+
+```
+poetry run python -m ziplime ingest -b limex_us_all_in --period day --start-date 2005-01-01 --end-date 2025-01-01 --symbols AAPL,NVDA --fundamental-data roe,pe_ratio
+```
+
+### **Live Trading Execution**:
+
+- The Ziplime library for live trading can be found on PyPI [here](https://pypi.org/project/ziplime/), providing a robust and flexible toolset for building sophisticated trading systems.
+- For live trading, you do not need an API key from Limex DataHub as it does not rely on data bundles. However, you must have a Lime account and configure your `credentials.json` file with the necessary account information
+- Save this file as an environment variable (for Windows use SET command):
+
+```
+export LIME_SDK_CREDENTIALS_FILE=/Users/credentials.json
+```
+
+- Execute your trading strategy with:
+
+```
+ziplime run -b limex_us_equity --start 2024-12-01 --end 2024-12-13 --data-frequency daily --capital-base 100000 --no-benchmark --broker lime-trader-sdk -f /Users/live_algo.py --print-algo
+```
+
+These features are designed for more advanced users who prefer to build their own customized trading setups. 
+
+<Note>
+  This section provides an overview of the Ziplime library, emphasizing its data ingestion and live trading capabilities for advanced users.
+</Note>
