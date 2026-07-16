@@ -119,11 +119,7 @@
     "links": [
       {
         "label": "Поддержка",
-        "href": "https://www.finam.ru/about/contacts/"
-      },
-      {
-        "href": "https://api.finam.ru/",
-        "label": "Финам Trade API"
+        "href": "mailto:varbuzov@limex.com"
       }
     ],
     "primary": {
