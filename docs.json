@@ -1,12 +1,12 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Ziplime от Финама",
-  "description": "Документация российской платформы Ziplime от Финама для разработки, тестирования и запуска алгоритмических торговых стратегий.",
+  "name": "Финам ZipLime",
+  "description": "Документация платформы Финам ZipLime: разработка, тестирование и запуск алгоритмических торговых стратегий.",
   "colors": {
-    "primary": "#C52025",
-    "light": "#FFDE41",
-    "dark": "#88181C"
+    "primary": "#887DF0",
+    "light": "#887DF0",
+    "dark": "#6E62D6"
   },
   "logo": {
     "light": "/logo/light.svg",
@@ -16,7 +16,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Руководство Ziplime",
+        "tab": "Руководство",
         "groups": [
           {
             "group": "Начало работы",
@@ -61,7 +61,7 @@
         ]
       },
       {
-        "tab": "Язык стратегий",
+        "tab": "Синтаксис ZipLime",
         "groups": [
           {
             "group": "Введение",
@@ -93,7 +93,7 @@
             ]
           },
           {
-            "group": "Переход на Ziplime",
+            "group": "Переход на ZipLime",
             "pages": [
               "language/migrating/from-metatrader",
               "language/migrating/from-quik",
@@ -109,17 +109,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "Для разработчиков",
-        "groups": [
-          {
-            "group": "Локальный запуск",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          }
-        ]
       }
     ],
     "global": {
@@ -131,12 +120,16 @@
       {
         "label": "Поддержка",
         "href": "https://www.finam.ru/about/contacts/"
+      },
+      {
+        "href": "https://api.finam.ru/",
+        "label": "Финам Trade API"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Финам Trade API",
-      "href": "https://api.finam.ru/"
+      "label": "Платформа",
+      "href": "http://ziplime.finam.ru"
     }
   },
   "footer": {
@@ -171,7 +164,7 @@
     "family": "Inter"
   },
   "appearance": {
-    "default": "system"
+    "default": "dark"
   },
   "search": {
     "prompt": "Поиск по документации"
