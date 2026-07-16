@@ -1,12 +1,14 @@
 ---
-title: "Costs & Commissions"
-description: "How trading costs are modeled in a backtest"
+title: "Расходы и комиссии"
+description: "Как торговые расходы учитываются в бэктесте"
 ---
 
-Broker commissions are included in every backtest by default, so results are closer to what you'd actually see in live trading. You can also configure commissions in more detail for a specific scenario — for example, to match a particular broker's fee schedule.
+Брокерская комиссия по умолчанию учитывается в каждом бэктесте, чтобы результат был ближе к условиям реальной торговли. Модель расходов можно настроить под конкретный сценарий: выбрать способ расчёта комиссии, учесть проскальзывание и другие применимые издержки.
 
-Combined with the platform's [unified backtest / live logic](/language/introduction/engine-overview), this is meant to close the usual gap between "looks great in a backtest" and "holds up in live trading": the same cost model applies in both places, rather than costs being an afterthought bolted on to the results screen.
+Для инструментов Мосбиржи, например **SBER**, **GAZP** или **LKOH**, стоимость позиции и расходы по рублёвым операциям указываются в рублях. При подготовке стратегии к реальной торговле задавайте параметры по актуальным условиям обслуживания Финама и характеристикам выбранного инструмента — точные значения могут меняться.
+
+Вместе с [единой логикой тестирования и исполнения](/language/introduction/engine-overview) модель расходов помогает сократить расхождение между результатами бэктеста и реальной торговли. Заявки в реальном брокерском контуре отправляются через [Finam Trade API](https://api.finam.ru/).
 
 <Note>
-  A realistic cost model reduces — but doesn't eliminate — the gap between backtest and live results. No backtest reproduces the future with full accuracy.
+  Реалистичная модель расходов уменьшает, но не устраняет расхождение между бэктестом и реальным результатом. Бэктест не может с полной точностью воспроизвести будущее исполнение заявок.
 </Note>

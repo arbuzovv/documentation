@@ -1,48 +1,48 @@
 ---
-title: "Portfolio & Recording"
-description: "Inspecting portfolio and account state, and recording custom metrics"
+title: "Портфель и запись метрик"
+description: "Проверка состояния портфеля и счёта, а также запись пользовательских метрик"
 ---
 
-Use `context.portfolio` to inspect strategy performance and positions during a run. Use `context.account` for account-level leverage and margin fields. Use `context.record(...)` to write custom metrics into the final performance output.
+Используйте `context.portfolio`, чтобы во время запуска проверять результаты стратегии и позиции. В `context.account` доступны показатели кредитного плеча, маржи и счёта в целом. Метод `context.record(...)` записывает пользовательские метрики в итоговую таблицу результатов.
 
-## Portfolio fields
+## Поля портфеля
 
-`context.portfolio` is a `Portfolio` object updated as the simulation runs.
+`context.portfolio` — объект `Portfolio`, который обновляется по ходу симуляции.
 
-Common fields:
+Основные поля:
 
-| Field | Meaning |
+| Поле | Значение |
 | --- | --- |
-| `starting_cash` | Starting cash balance |
-| `cash` | Current cash |
-| `portfolio_value` | Cash plus position value |
-| `pnl` | Profit and loss |
-| `returns` | Current return value |
-| `cash_flow` | Cash changes |
-| `positions_value` | Total market value of positions |
-| `positions_exposure` | Total exposure of positions |
-| `positions` | Nested position storage by exchange/account/asset in current runtime |
+| `starting_cash` | Начальный остаток денежных средств |
+| `cash` | Текущие денежные средства |
+| `portfolio_value` | Денежные средства плюс стоимость позиций |
+| `pnl` | Прибыль и убыток |
+| `returns` | Текущая доходность |
+| `cash_flow` | Изменение денежных средств |
+| `positions_value` | Общая рыночная стоимость позиций в валюте портфеля |
+| `positions_exposure` | Общая экспозиция позиций в валюте портфеля |
+| `positions` | В текущей среде — вложенное хранилище позиций по бирже, счёту и инструменту |
 
-Example:
+Пример для портфеля в рублях:
 
 ```python
 async def handle_data(context, data):
     cash = context.portfolio.cash
     value = context.portfolio.portfolio_value
 
-    if cash > 10_000:
+    if cash > 1_000_000:
         ...
 
     context.record(cash=cash, portfolio_value=value)
 ```
 
-## Position helpers
+## Вспомогательные методы позиций
 
-Prefer helper methods when you need amounts or values for one asset.
+Чтобы получить количество или стоимость позиции по одному инструменту, используйте вспомогательные методы.
 
 ### `await context.portfolio.get_asset_positions(asset, exchange_name=None, trading_account_id=None)`
 
-Return positions that match the underlying asset id. This can aggregate across exchange listings of the same underlying asset.
+Возвращает позиции, соответствующие идентификатору базового инструмента. Метод может объединять разные биржевые листинги одного базового инструмента.
 
 ```python
 positions = await context.portfolio.get_asset_positions(context.asset)
@@ -50,16 +50,18 @@ positions = await context.portfolio.get_asset_positions(context.asset)
 
 ### `await context.portfolio.get_exchange_asset_positions(asset, exchange_name=None, trading_account_id=None)`
 
-Return positions that match the exact exchange asset SID.
+Возвращает позиции, которые точно соответствуют SID биржевого инструмента.
 
 ```python
 positions = await context.portfolio.get_exchange_asset_positions(
     context.asset,
-    exchange_name="LIME",
+    exchange_name="MOEX",
 )
 ```
 
-### Amount and value helpers
+Значение `exchange_name` должно совпадать с именем биржи в конфигурации запуска.
+
+### Методы количества и стоимости
 
 ```python
 amount = await context.portfolio.get_asset_positions_amount(context.asset)
@@ -67,27 +69,27 @@ value = await context.portfolio.get_asset_positions_value(context.asset)
 
 exchange_amount = await context.portfolio.get_exchange_asset_positions_amount(
     context.asset,
-    exchange_name="LIME",
+    exchange_name="MOEX",
 )
 exchange_value = await context.portfolio.get_exchange_asset_positions_value(
     context.asset,
-    exchange_name="LIME",
+    exchange_name="MOEX",
 )
 ```
 
-Use the `exchange_asset` versions when the exact listing matters. Use the `asset` versions when you want to treat listings of the same underlying asset together.
+Используйте варианты `exchange_asset`, когда важен конкретный листинг. Варианты `asset` подходят, если разные листинги одного базового инструмента нужно рассматривать вместе.
 
-## Position fields
+## Поля позиции
 
-Each `Position` has:
+Каждый объект `Position` содержит:
 
-| Field | Meaning |
+| Поле | Значение |
 | --- | --- |
-| `asset` | Exchange asset |
-| `amount` | Current amount |
-| `cost_basis` | Average cost per share or contract |
-| `last_sale_price` | Last synced price |
-| `last_sale_date` | Last sale datetime, when available |
+| `asset` | Биржевой инструмент |
+| `amount` | Текущее количество |
+| `cost_basis` | Средняя стоимость одной акции или контракта |
+| `last_sale_price` | Последняя синхронизированная цена |
+| `last_sale_date` | Дата и время последней сделки, если доступны |
 
 ```python
 positions = await context.portfolio.get_asset_positions(context.asset)
@@ -95,26 +97,26 @@ for position in positions:
     print(position.amount, position.cost_basis, position.last_sale_price)
 ```
 
-## Account fields
+## Поля счёта
 
-`context.account` contains account and leverage metrics.
+`context.account` содержит показатели счёта и кредитного плеча.
 
-Common fields:
+Основные поля:
 
-| Field | Meaning |
+| Поле | Значение |
 | --- | --- |
-| `settled_cash` | Settled cash |
-| `buying_power` | Buying power |
-| `equity_with_loan` | Equity with loan value |
-| `total_positions_value` | Total position value |
-| `total_positions_exposure` | Total position exposure |
-| `available_funds` | Available funds |
-| `excess_liquidity` | Excess liquidity |
-| `leverage` | Gross leverage |
-| `net_leverage` | Net leverage |
-| `net_liquidation` | Net liquidation value |
+| `settled_cash` | Денежные средства после расчётов |
+| `buying_power` | Покупательная способность |
+| `equity_with_loan` | Собственные средства с учётом стоимости обеспечения |
+| `total_positions_value` | Общая стоимость позиций в валюте портфеля |
+| `total_positions_exposure` | Общая экспозиция позиций в валюте портфеля |
+| `available_funds` | Доступные средства |
+| `excess_liquidity` | Избыточная ликвидность |
+| `leverage` | Валовая величина кредитного плеча |
+| `net_leverage` | Чистая величина кредитного плеча |
+| `net_liquidation` | Чистая ликвидационная стоимость |
 
-Example:
+Пример:
 
 ```python
 from ziplime.finance.execution import MarketOrder
@@ -123,11 +125,11 @@ if context.account.leverage > 1.5:
     await context.order_target_percent(context.asset, 0.0, style=MarketOrder())
 ```
 
-## Recording custom metrics
+## Запись пользовательских метрик
 
 ### `context.record(*args, **kwargs)`
 
-Recorded values are added to the daily performance output and are available in `analyze`.
+Записанные значения добавляются в ежедневную таблицу результатов и доступны в `analyze`.
 
 ```python
 context.record(
@@ -138,19 +140,19 @@ context.record(
 )
 ```
 
-You can also pass alternating positional name/value pairs:
+Также можно передать чередующиеся позиционные пары «имя — значение»:
 
 ```python
 context.record("signal", signal, "cash", context.portfolio.cash)
 ```
 
-Prefer keyword arguments for readability.
+Для удобства чтения предпочтительнее именованные аргументы.
 
-## Analyze recorded values
+## Анализ записанных значений
 
 ```python
 def analyze(context, perf):
     print(perf[["portfolio_value", "cash", "signal"]].tail())
 ```
 
-`perf` is produced after the run. Its exact columns depend on the metrics set and on the names you recorded.
+`perf` формируется после завершения запуска. Точный набор столбцов зависит от набора метрик и имён, переданных в `context.record`.

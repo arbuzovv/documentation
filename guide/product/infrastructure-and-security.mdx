@@ -1,32 +1,34 @@
 ---
-title: "Infrastructure & Security"
-description: "Data sourcing, cloud compute, and security principles"
+title: "Инфраструктура и безопасность"
+description: "Вычисления, рыночные данные и безопасное подключение к сервисам Финама"
 ---
 
-All market data comes from **MarketData.TA**, Ziplime's internal data service. Having a proprietary source keeps data quality and consistency under control.
+Ziplime от Финама объединяет вычислительную среду, доступные рыночные данные и инструменты анализа. В российском контуре основной сценарий ориентирован на инструменты Московской биржи и расчёты в рублях. Конкретный источник, состав и глубина данных зависят от набора данных и версии продукта.
 
-## Core principles
+## Основные принципы
 
 <CardGroup cols={2}>
-  <Card title="Nothing to set up" icon="plug">
-    Required libraries and data are already connected. There's nothing to install, no quotes to source, no environment to assemble.
+  <Card title="Готовая среда" icon="plug">
+    Базовые библиотеки и подключённые наборы данных доступны в платформе. Для облачного сценария пользователю не требуется самостоятельно собирать окружение.
   </Card>
 
-  <Card title="Cloud compute" icon="cloud">
-    Backtests run on Ziplime's servers, so no powerful hardware is required on your end.
+  <Card title="Удалённые вычисления" icon="cloud">
+    Бэктесты выполняются в инфраструктуре Ziplime, поэтому требования к компьютеру пользователя обычно невысоки.
   </Card>
 
-  <Card title="Serverless architecture" icon="layer-group">
-    Infrastructure scales automatically with load, with no idle servers to manage.
+  <Card title="Разделение доступов" icon="layer-group">
+    Доступ к платформе, данным и реальному торговому счёту рассматривается отдельно. Для каждой операции должны использоваться только необходимые права.
   </Card>
 
-  <Card title="Data stays in-perimeter" icon="shield">
-    Results and data are stored inside the company's own environment — an important point for security-conscious users.
+  <Card title="Защита учётных данных" icon="shield">
+    Токены Финам Trade API и другие секреты нельзя публиковать в коде, сообщениях или репозиториях. Для реального запуска используйте предусмотренное защищённое хранилище.
   </Card>
 </CardGroup>
 
-Because the platform is serverless, cost scales with actual resource usage, which keeps the underlying economics predictable.
+## Подключение брокерского счёта
 
-## Trade attribution
+Реальные торговые операции выполняются через [Финам Trade API](https://api.finam.ru/). Перед подключением проверьте права токена, выбранный счёт, список разрешённых инструментов и режим торгов. Отзывайте неиспользуемые токены и регулярно проверяйте активные подключения в сервисах Финама.
 
-For broker-side visibility, trades placed through Ziplime via Lime Trader (REST API) carry a tag identifying them as originating from Ziplime. This makes it possible to measure the product's real contribution to trading activity.
+<Note>
+  Подробности размещения компонентов, хранения и обработки данных определяются действующей архитектурой и политиками Финама. В публичной документации не следует указывать неподтверждённые облачные провайдеры, регионы размещения или гарантии доступности.
+</Note>

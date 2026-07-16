@@ -1,56 +1,41 @@
 ---
-title: "Prompting"
-description: "To harness the full potential of Ziplime's AI in creating algorithmic trading strategies, it's essential to write clear and detailed prompts. Here are some guidelines and examples to help you craft effective prompts for strategy development"
+title: "Как формулировать запросы"
+description: "Рекомендации и примеры запросов к ИИ Ziplime от Финама"
 icon: "text-size"
 ---
 
-**Guidelines for Writing Prompts**
+Хороший запрос описывает не только идею, но и правила, по которым её можно однозначно проверить.
 
-1. **Be Specific:** Clearly define the trading logic, including entry and exit conditions. Specify the type of assets or markets you're interested in.
+## Что указать
 
-2. **Include Timeframes:** Mention the desired timeframes for your strategy, whether it's intraday, daily, weekly, etc.
+1. **Рынок и инструменты.** Например, акции SBER, GAZP и LKOH на Московской бирже.
+2. **Таймфрейм.** Минутные, часовые или дневные бары.
+3. **Условия входа и выхода.** Формальные правила без двусмысленности.
+4. **Распределение капитала.** Размер позиции, ребалансировка и стартовый капитал в рублях.
+5. **Ограничения риска.** Максимальная доля позиции, стоп-условия, просадка или волатильность.
+6. **Издержки.** Комиссии, проскальзывание и ограничения ликвидности.
+7. **Критерий сравнения.** Например, индекс МосБиржи или стратегия «купить и держать».
+8. **Нужный результат.** Метрики, таблицы, графики и объяснение сделок.
 
-3. **Define Indicators:** Specify any technical indicators or fundamental metrics you want to incorporate.
+## Пример: пересечение средних
 
-4. **Clarify Objectives:** State your performance objectives, such as maximizing return, minimizing risk, or achieving a specific Sharpe ratio.
+~~~text
+Создай дневную стратегию для акции SBER на Московской бирже.
+Открывай длинную позицию, когда SMA(50) пересекает SMA(200) снизу вверх,
+и закрывай её при обратном пересечении. Не используй кредитное плечо.
+Учти комиссии и покажи доходность, волатильность и максимальную просадку.
+~~~
 
-5. **Add Constraints:** Include any constraints such as risk tolerance, position limits, or transaction costs.
+## Пример: моментум-портфель
 
-6. **Iterate and Refine:** Start with a simple prompt and gradually refine it based on the AI's output and your strategic goals.
-
-#### Examples of Effective Prompts
-
-**Example 1: strategies based on technical indicators**
-
-<CodeGroup>
-  ```typescript Moving Average strategy
-  Create a strategy for trading U.S. stocks using a moving average crossover technique. 
-  Use a 50-day simple moving average (SMA) and a 200-day SMA. 
-  Enter a long position when the 50-day SMA crosses above the 200-day SMA, and 
-  exit the position when the 50-day SMA crosses below.
-  ```
-
-  ```typescript Momentum strategy
-  Develop a momentum strategy for ETFs. 
-  Identify ETFs with the top 10% highest relative strength over the past 6 months. 
-  Enter positions in these ETFs and rebalance the portfolio monthly. 
-  Target a risk level to maintain a maximum drawdown below 10%. 
-  Include transaction costs of 0.1% per trade.
-  ```
-</CodeGroup>
-
-**Example 2: strategies based on fundamental data**
-
-<CodeGroup>
-  ```typescript Earnings-Based Strategy
-  Design a strategy for futures trading based on earnings 
-  announcements. Enter a position in futures contracts 
-  if the company reports earnings that exceed analyst expectations 
-  by more than 10%. Exit the trade one day 
-  after the earnings announcement. Incorporate a stop-loss of 2% and take-profit of 5%.
-  ```
-</CodeGroup>
+~~~text
+Из ликвидных акций Московской биржи раз в месяц выбирай пять бумаг
+с наибольшей доходностью за последние шесть месяцев.
+Распределяй капитал поровну, ограничь одну позицию 20% портфеля,
+исключи данные текущего дня из расчёта сигнала и учти торговые издержки.
+Сравни результат с индексом МосБиржи.
+~~~
 
 <Tip>
-  If you don't like result of strategy or if you have error while backtesting try to regenerate zipline engine code
+  Если результат выглядит неправдоподобно, попросите ИИ проверить заглядывание в будущее, порядок исполнения заявок, пропуски данных, комиссии и проскальзывание — а не просто повторно сгенерировать код.
 </Tip>

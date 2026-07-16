@@ -1,30 +1,37 @@
 ---
-title: "Video Tutorials"
-icon: "image"
+title: "Материалы для обучения"
+description: "Куда перейти после первого знакомства с платформой"
+icon: "book-open"
 ---
 
-To help you get started with writing trading strategies using Zipline, there is a wealth of video resources available online. These tutorials cover everything from the basics of algorithmic trading to advanced strategy development techniques. They include step-by-step guides on using Zipline, both as a standalone tool and within the context of Quantopian, its original platform.
+Для начала изучите материалы в порядке от общей логики к техническим деталям:
 
-#### Why Watch Video Tutorials?
+<CardGroup cols={2}>
+  <Card title="Как работает платформа" icon="route" href="/guide/getting-started/how-it-works">
+    Путь от идеи до бэктеста и подготовленной реальной торговли.
+  </Card>
 
-* **Visual Learning**: Video tutorials provide a visual and auditory learning experience, which can be more effective for many users compared to reading text-based guides.
+  <Card title="Три уровня работы" icon="layer-group" href="/guide/platform/three-levels">
+    Чат, готовые блоки и непосредственное редактирование Python.
+  </Card>
 
-* **Step-by-Step Guidance**: Videos often break down complex concepts into manageable steps, making it easier for you to follow along and implement strategies.
+  <Card title="Язык стратегий" icon="code" href="/language/strategy-language/overview">
+    Жизненный цикл, данные, заявки, портфель и расписание.
+  </Card>
 
-* **Diverse Topics**: The range of topics covers everything from the fundamentals of using Zipline to specific strategy implementations and optimizations.
+  <Card title="Финам Trade API" icon="plug" href="https://api.finam.ru/">
+    Официальная документация брокерского API и материалы для разработчиков.
+  </Card>
+</CardGroup>
 
-#### Recommended Video Tutorial
+## Практический маршрут
 
+1. Соберите простую стратегию на одном ликвидном инструменте Московской биржи.
+2. Проверьте работу на разных рыночных периодах.
+3. Добавьте комиссии, проскальзывание и ограничения позиций.
+4. Изучите сделки и причины просадки.
+5. Только после этого расширяйте вселенную инструментов и переходите к оптимизации.
 
-One highly recommended video to start with is [“Getting Started with Algorithmic Trading using Zipline and Quantopian”](https://www.youtube.com/watch?v=wu0y0Szx4Mg). This tutorial provides an excellent introduction to the basics of algorithmic trading and how to use Zipline to backtest your strategies effectively.
-
-These resources are invaluable for both beginners and experienced traders looking to refine their algorithmic trading skills and make the most of the Ziplime platform.
-
-***
-
-
-
-
-<iframe width="560" height="315" src="https://www.youtube.com/watch?v=wu0y0Szx4Mg" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ width: '100%', borderRadius: '0.5rem' }} />
-
-<br />
+<Note>
+  Используйте актуальные материалы Финама: состав доступных инструментов, методы API и условия доступа могут меняться.
+</Note>

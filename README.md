@@ -1,32 +1,41 @@
-# Mintlify Starter Kit
+# Документация Ziplime от Финама
 
-Click on `Use this template` to copy the Mintlify starter kit. The starter kit contains examples including
+Репозиторий содержит русскоязычную документацию Ziplime для российского контура Финама. Основной пользовательский сценарий — разработка и тестирование алгоритмических стратегий на российских инструментах с возможностью подключения реальной торговли через Финам Trade API.
 
-- Guide pages
-- Navigation
-- Customizations
-- API Reference pages
-- Use of popular components
+## Принципы контента
 
-### Development
+- Бренд продукта: **Ziplime от Финама**.
+- Основной рынок в примерах: Московская биржа.
+- Основная валюта расчётов: российский рубль.
+- Типовые тикеры: SBER, GAZP, LKOH, YDEX.
+- Актуальные условия доступа, тарифы и ограничения берутся только из интерфейсов и официальных материалов Финама.
+- Документация не является индивидуальной инвестиционной рекомендацией.
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+## Локальный запуск
 
-```
-npm i -g mintlify
-```
+Нужен Node.js версии 20.17.0 или новее.
 
-Run the following command at the root of your documentation (where docs.json is)
+~~~bash
+npm i -g mint
+mint dev
+~~~
 
-```
-mintlify dev
-```
+Локальная версия будет доступна по адресу http://localhost:3000.
 
-### Publishing Changes
+## Проверка изменений
 
-Install our Github App to auto propagate changes from your repo to your deployment. Changes will be deployed to production automatically after pushing to the default branch. Find the link to install on your dashboard. 
+~~~bash
+mint validate
+mint broken-links
+~~~
 
-#### Troubleshooting
+Перед публикацией дополнительно проверьте:
 
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
-- Page loads as a 404 - Make sure you are running in a folder with `docs.json`
+- отсутствие ссылок и терминов старого US-контура;
+- корректность примеров для Мосбиржи и рублёвых расчётов;
+- актуальность ссылок на [Финам](https://www.finam.ru/) и [Финам Trade API](https://api.finam.ru/);
+- валидность docs.json, MDX-компонентов и внутренних ссылок.
+
+## Публикация
+
+После отправки изменений в основную ветку Mintlify собирает и публикует документацию через настроенную интеграцию репозитория.

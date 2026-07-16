@@ -1,16 +1,18 @@
 ---
-title: "Registration & Global Auth"
-description: "Signing up and staying signed in with Global Auth"
+title: "Регистрация и вход"
+description: "Доступ к Ziplime от Финама и подготовка Финам Trade API"
 ---
 
-Registration on Ziplime is **free**. There is no cost to create an account and start describing your first strategy.
+Для работы с Ziplime от Финама используйте способ регистрации и входа, указанный в текущей версии продукта. Условия доступа могут зависеть от этапа запуска, выбранного тарифа и статуса клиента Финама.
 
-## Global Auth
+## Подключение реальной торговли
 
-Ziplime uses **Global Auth**, the shared authentication system used across Limex products. If you're already signed in to Limex, you don't need to sign in again when you open Ziplime — your session carries over automatically.
+Для отправки реальных заявок нужен брокерский счёт Финама и доступ к [Финам Trade API](https://api.finam.ru/). Токен API создаётся в официальном сервисе Финама; выдавайте ему только необходимые права и не передавайте значение токена другим людям.
 
-Get started at [ziplime.limex.com](http://ziplime.limex.com). See [Environment & Infrastructure](/guide/product/two-environments) for what runs underneath.
+Доступ к Ziplime и доступ к торговому счёту — разные уровни авторизации. Сам факт входа в платформу не означает, что стратегия уже может выставлять реальные заявки.
+
+Перед подключением ознакомьтесь с разделами [«Российский контур и инфраструктура»](/guide/product/two-environments) и [«Реальная торговля»](/guide/platform/real-trading).
 
 <Note>
-  The free tier has limits on the number of backtest runs and strategies you can keep. Higher tiers remove these limits and unlock more capable AI models. See [Pricing & Registration](/guide/plans/pricing-and-registration).
+  Актуальные условия регистрации, тарифы и ограничения показываются в интерфейсе и официальных материалах Финама. Не используйте сведения о старых тарифах или зарубежном контуре. Подробнее — в разделе [«Тарифы и регистрация»](/guide/plans/pricing-and-registration).
 </Note>

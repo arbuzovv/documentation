@@ -1,50 +1,51 @@
 ---
-title: "Overview"
-description: "What Ziplime is and who it's for"
+title: "Обзор"
+description: "Что такое Ziplime от Финама и кому подходит платформа"
 ---
 
-Ziplime is an AI-powered algorithmic trading platform. It lets everyday investors design a trading strategy, test it against historical data, understand the results, and launch it on a real account — without needing to be a professional programmer.
+Ziplime от Финама — платформа для разработки алгоритмических торговых стратегий с помощью ИИ. Она помогает описать идею обычным языком, превратить её в код, проверить на исторических данных и подготовить к запуску на брокерском счёте Финама.
 
-The core idea behind Ziplime is **democratizing algorithmic trading**. Capabilities that used to be reserved for hedge funds and quant teams with large budgets are now available to retail investors.
+Основная задача продукта — сделать инструменты алгоритмической торговли понятнее частному инвестору. Для начала не обязательно быть профессиональным разработчиком: ИИ помогает с кодом, а платформа объединяет данные, вычисления и анализ результатов в одном рабочем процессе.
 
-In one sentence: **describe a trading idea in plain language, and a team of AI agents turns it into a working strategy, backtests it, and helps you launch it in live trading.**
+Коротко: **вы описываете торговую гипотезу, команда ИИ-агентов помогает оформить её как стратегию, провести бэктест и подготовить подключение к реальной торговле через Финам Trade API.**
 
-## The problem we solve
+## Какие задачи решает платформа
 
-Algorithmic trading has historically been out of reach for most people for three reasons:
+Алгоритмическая торговля обычно требует сразу нескольких компетенций и компонентов:
 
 <CardGroup cols={3}>
-  <Card title="Programming skills" icon="code">
-    Strategies are written in code, and the barrier to entry is high.
+  <Card title="Разработка" icon="code">
+    Стратегии исполняются как код, а значит, правила должны быть однозначными и технически корректными.
   </Card>
 
-  <Card title="Quality data" icon="database">
-    Historical, fundamental, and alternative data are expensive and scattered across sources.
+  <Card title="Рыночные данные" icon="database">
+    Для исследования нужны согласованные исторические данные по выбранным инструментам и торговому календарю.
   </Card>
 
-  <Card title="Infrastructure" icon="server">
-    Backtesting, live execution, and monitoring are a substantial engineering task on their own.
+  <Card title="Инфраструктура" icon="server">
+    Бэктесты, хранение результатов, мониторинг и передача заявок требуют отдельной технической среды.
   </Card>
 </CardGroup>
 
-Ziplime removes all three barriers: AI writes and fixes code on the user's behalf, market data is already connected inside the platform, and all infrastructure runs in the cloud with nothing to configure.
+Ziplime объединяет эти компоненты: ИИ помогает писать и проверять код, платформа предоставляет доступные наборы данных и выполняет расчёты в своей среде. Для российского контура основной сценарий — исследование инструментов Московской биржи с расчётами в рублях и последующим подключением реальной торговли через сервисы Финама.
 
-## Product link
+## Полезные ссылки
 
-[ziplime.limex.com](http://ziplime.limex.com)
+- [Финам Trade API](https://api.finam.ru/) — официальный сервис для алгоритмической торговли и интеграции с брокерским счётом.
+- [Как это работает](/guide/getting-started/how-it-works) — путь от идеи до подготовленной стратегии.
 
 <Note>
-  Ziplime is currently in beta and under active development. Specific pricing has not been published yet.
+  Ziplime от Финама развивается. Доступность функций, наборов данных, инструментов и вариантов подключения может меняться; ориентируйтесь на сведения в текущей версии интерфейса и официальных материалах Финама.
 </Note>
 
-## Where to go next
+## Куда перейти дальше
 
 <CardGroup cols={2}>
-  <Card title="How It Works" icon="route" href="/guide/getting-started/how-it-works">
-    Follow the user journey from idea to live trading.
+  <Card title="Как это работает" icon="route" href="/guide/getting-started/how-it-works">
+    Пройдите весь путь от торговой идеи до подготовки реального запуска.
   </Card>
 
-  <Card title="AI Agent Team" icon="users" href="/guide/platform/ai-agent-team">
-    Meet the team of AI agents that builds your strategy.
+  <Card title="Команда ИИ-агентов" icon="users" href="/guide/platform/ai-agent-team">
+    Узнайте, какие роли помогают разрабатывать и проверять стратегию.
   </Card>
 </CardGroup>

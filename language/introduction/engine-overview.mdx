@@ -1,17 +1,19 @@
 ---
-title: "Engine Overview"
-description: "The backtesting engine behind Ziplime strategies"
+title: "Обзор движка"
+description: "Движок тестирования стратегий в Ziplime от Финама"
 ---
 
-Ziplime strategies are written in **Python** and run on an engine built on **Zipline** — the backtesting engine that once powered the Quantopian platform. It's open source, and Ziplime maintains its own fork: [github.com/Limex-com/ziplime](https://github.com/Limex-com/ziplime).
+Стратегии в **Ziplime от Финама** пишутся на **Python** и выполняются в движке на базе **Zipline**. Zipline — открытый движок для тестирования, который ранее использовался платформой Quantopian.
 
-Unlike a proprietary scripting language, writing a Ziplime strategy means writing Python against the Ziplime/Zipline API. That has a practical benefit: any Python code you already have — your own logic, helper libraries, data processing — can, in principle, be used inside a strategy.
+Вместо отдельного проприетарного языка Ziplime от Финама использует Python и API Ziplime/Zipline. Поэтому в стратегию можно переносить собственную логику, вспомогательные библиотеки и код обработки данных на Python.
 
-## What the engine adds on top of stock Zipline
+## Что добавлено к базовым возможностям Zipline
 
-- **Fundamental data** — company financials, valuation multiples.
-- **Alternative data** — non-traditional signals beyond price and volume.
-- **Asynchronous core** — key functions are async, so a strategy behaves consistently whether it's running on historical data or live.
-- **Unified backtest / live logic** — the same strategy code runs in both modes, so a backtest result is a meaningful preview of live behavior.
+- **Фундаментальные данные** — финансовые показатели компаний и оценочные мультипликаторы.
+- **Альтернативные данные** — сигналы, которые не ограничиваются ценой и объёмом торгов.
+- **Асинхронное ядро** — ключевые функции поддерживают асинхронное выполнение, чтобы одна и та же логика могла работать с историческими и текущими данными.
+- **Единая логика для тестирования и реальной торговли** — торговые правила не нужно переписывать при переходе от бэктеста к исполнению заявок.
 
-See [Under the Hood](/language/introduction/under-the-hood) for the performance layer, and [Writing Strategies](/language/writing-strategies/three-levels) for how you actually build one.
+Для российского рынка стратегия может работать, например, с акциями Мосбиржи **SBER**, **GAZP** и **LKOH**; денежные значения для рублёвых инструментов рассчитываются в рублях. Для реальной торговли подключение к брокерскому контуру и отправка заявок выполняются через [Finam Trade API](https://api.finam.ru/).
+
+Подробнее об архитектуре и производительности читайте в разделе [«Под капотом»](/language/introduction/under-the-hood), а о создании стратегий — в разделе [«Три уровня разработки стратегии»](/language/writing-strategies/three-levels).

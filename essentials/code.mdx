@@ -1,59 +1,42 @@
 ---
-title: "Backtester"
-description: "About zipline backtester"
+title: "Бэктестер"
+description: "Как Ziplime от Финама проверяет стратегии на исторических данных"
 icon: "code"
 ---
 
-Ziplime integrates the Zipline backtester, a powerful and flexible tool originally developed as the core of the Quantopian platform. Zipline is designed for high-performance historical data testing, allowing users to evaluate their trading strategies with precision. Here's a look at the key features and syntax of the Zipline backtester:
+Ziplime использует событийную модель Zipline: движок последовательно обрабатывает рыночные бары, вызывает функции жизненного цикла стратегии и моделирует заявки, позиции и стоимость портфеля.
 
-**Key Features**
+## Что даёт движок
 
-1. **Event-Driven System**: Zipline operates on an event-driven system, simulating market dynamics by processing historical data in chronological order.
+1. **Событийное исполнение** — код получает данные в хронологическом порядке.
+2. **Минутные и дневные данные** — доступный набор частот зависит от источника и инструмента.
+3. **Асинхронный API** — получение данных и торговые операции выполняются через async-функции.
+4. **Расширяемость** — можно добавлять собственные индикаторы, факторы и метрики.
+5. **Единая логика** — один алгоритмический файл можно использовать как основу для бэктеста и подготовленного live-сценария.
 
-2. **Pandas Integration**: It utilizes `pandas`, a popular data analysis library in Python, to handle time series data efficiently, making it easy to manipulate and analyze financial datasets.
+## Минимальный пример
 
-3. **Diverse Data Support**: Zipline supports a variety of data types, including daily and minute bar data, fundamental data, and alternative datasets.
+~~~python
+from ziplime.finance.execution import MarketOrder
 
-4. **Built-in Indicators and Metrics**: Users can incorporate a wide range of pre-built technical indicators and performance metrics to enhance strategy evaluation.
 
-5. **Modular and Extensible**: Its modular design allows users to extend its capabilities by adding custom functions and components, tailoring the backtester to specific requirements.
+async def initialize(context):
+    context.asset = await context.symbol("SBER")
+    context.invested = False
 
-#### Basic Syntax and Workflow
 
-To use the Zipline backtester, users typically write a Python script defining their strategy. Below is a basic outline of the syntax and workflow:
+async def handle_data(context, data):
+    if not context.invested:
+        await context.order_target_percent(
+            asset=context.asset,
+            target=1.0,
+            style=MarketOrder(),
+        )
+        context.invested = True
+~~~
 
-* **Import Libraries**:
-  Start by importing necessary libraries, including Zipline and `pandas`
+Имена функций и сигнатуры API не переводятся. Полный справочник находится в разделе [«Язык стратегий»](/language/strategy-language/overview).
 
-```python
-import pandas as pd
-from zipline.api import order, record, symbol
-```
-
-* **Initialize Function:**
-  Define the `initialize()` function to set initial parameters and variables for the trading algorithm.
-
-```python
-def initialize(context):
-    context.asset = symbol('AAPL')
-    context.short_mavg = 50
-    context.long_mavg = 200
-```
-
-* **Handle Data Function**
-
-  * Implement the `handle_data()` function, which contains the logic executed on each iteration of the backtester, such as calculating indicators and placing orders.
-
-```python
-def handle_data(context, data):
-    short_mavg = data.history(context.asset, 'price', context.short_mavg, '1d').mean()
-    long_mavg = data.history(context.asset, 'price', context.long_mavg, '1d').mean()
-
-    if short_mavg > long_mavg:
-        order(context.asset, 10)
-    elif short_mavg < long_mavg:
-        order(context.asset, -10)
-
-    record(AAPL=data.current(context.asset, 'price'))
-
-```
+<Warning>
+  Пример показывает структуру алгоритма, а не готовую инвестиционную стратегию.
+</Warning>

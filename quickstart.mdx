@@ -1,28 +1,37 @@
 ---
-title: "Visual Components"
-description: "Ziplime offers a user-friendly interface designed to simplify the process of developing, testing, and deploying trading strategies. Below are the key visual components that facilitate user interaction and enhance the trading experience on the platform"
+title: "Интерфейс платформы"
+description: "Основные области рабочего пространства Ziplime от Финама"
 ---
 
-![](/gui.png)
+Рабочее пространство объединяет описание идеи, код стратегии, настройки бэктеста и анализ результатов.
 
-### AI Prompting of Strategy
+<CardGroup cols={2}>
+  <Card title="Чат с ИИ" icon="messages">
+    Опишите стратегию по-русски, уточняйте правила и просите объяснить сгенерированный код.
+  </Card>
 
-* **Interactive AI Interface**: The platform's AI-powered interface allows users to input natural language descriptions of their desired trading strategies. The AI then generates the corresponding algorithmic code, offering a seamless transition from concept to execution.
+  <Card title="Редактор стратегии" icon="code">
+    Просматривайте и редактируйте Python-код, параметры и подключённые источники данных.
+  </Card>
 
-### Backtester Engine
+  <Card title="Настройки бэктеста" icon="sliders">
+    Задавайте период, частоту данных, стартовый капитал, комиссии и дополнительные ограничения.
+  </Card>
 
-* **Zipline Integration**: At the core of Ziplime's backtesting capabilities is the Zipline engine. This powerful tool allows for accurate and efficient backtesting of strategies using historical data, providing users with insights into potential strategy performance.
+  <Card title="Результаты" icon="chart-line">
+    Изучайте доходность, просадку, сделки, позиции и пользовательские метрики.
+  </Card>
+</CardGroup>
 
-### Plots
+## Рекомендуемый порядок работы
 
-* **Data Visualization**: Ziplime provides an array of plotting tools to visualize backtest results. Users can generate detailed graphs that depict various metrics, such as portfolio value, drawdowns, and risk assessments, enabling a comprehensive understanding of strategy performance.
+1. Сформулируйте правила стратегии и перечень инструментов Московской биржи.
+2. Проверьте сгенерированный код и отсутствие заглядывания в будущее.
+3. Настройте период теста, капитал в рублях, комиссии и ограничения позиций.
+4. Запустите бэктест и разберите предупреждения.
+5. Сравните несколько вариантов на одинаковых данных.
+6. Перед реальной торговлей отдельно проверьте доступность инструментов и параметры подключения к Финам Trade API.
 
-### Tables
-
-* **Basic Characteristics**: In addition to plots, the platform offers tabular representations of essential strategy metrics. These tables summarize key performance indicators, making it easier to compare different strategies or assess the impact of modifications.
-
-### Backtesting Config
-
-* **Configurable Backtesting Environment**: The backtesting configuration interface allows users to manage and manually initiate backtests. Users can set parameters such as time range, data frequency, and dataset selection, offering full control over the backtesting process.
-
-These visual components are designed to provide an intuitive and engaging experience, empowering users to efficiently develop, test, and refine their trading strategies within the Ziplime platform.
+<Tip>
+  Начинайте с простой версии стратегии. Добавляйте фильтры и оптимизацию только после того, как базовая логика стала понятной и воспроизводимой.
+</Tip>

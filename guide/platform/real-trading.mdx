@@ -1,24 +1,33 @@
 ---
-title: "Real Trading"
-description: "Going from backtest to a live account"
+title: "Реальная торговля"
+description: "Подготовка стратегии к запуску на брокерском счёте Финама"
 ---
 
-A finished strategy can be launched on a real account directly from Ziplime.
+Подготовленную и проверенную стратегию можно подключить к реальному счёту Финама, если эта функция доступна в используемой версии Ziplime от Финама и для выбранного инструмента.
 
-Live trading runs through the broker [**Lime Trading**](https://lime.co), via [**Lime Trader (REST API)**](https://lime.co/rest-api-python-sdk/): connecting is a matter of a click and a few trading parameters, with no manual integration work.
+Торговые операции передаются через [**Финам Trade API**](https://api.finam.ru/). Для подключения потребуются действующий брокерский счёт, токен API с необходимыми правами и параметры торгового режима. Следуйте актуальной документации Trade API: порядок авторизации и доступные методы могут меняться.
 
-## Where the algorithm runs
+## Что проверить перед запуском
 
-In live trading, your strategy executes on Ziplime's own servers — not on your computer. That means:
+- правильный брокерский счёт и права токена;
+- идентификатор инструмента, торговую площадку, режим торгов и валюту расчёта;
+- размер лота, шаг цены и допустимый объём заявки;
+- брокерские и биржевые комиссии;
+- расписание Московской биржи и поведение стратегии во время клиринга и неторговых периодов;
+- ограничения риска, максимальный размер позиции и условие аварийной остановки.
 
-- No need to rent a VPS.
-- No need to keep a browser tab open.
-- No need to keep your computer powered on.
+Сначала используйте тестовый или иной безопасный режим, если он предусмотрен текущими сервисами. Перед переходом на реальные деньги проведите запуск с минимально допустимым риском и настройте контроль заявок, позиций и ошибок.
 
-Once launched, the strategy trades on its own, around the clock.
+## Где выполняется алгоритм
 
-The path from idea to live account closes in a single click: you don't need to build a broker integration or stand up your own infrastructure.
+В облачном сценарии стратегия выполняется в инфраструктуре Ziplime, а не во вкладке браузера пользователя. Компьютер не обязан оставаться включённым, однако запуск зависит от доступности сервиса, настроек стратегии и расписания торгов соответствующей площадки.
 
-## Running locally
+Не описывайте такую стратегию как «работающую круглосуточно»: большинство инструментов Московской биржи торгуется по установленным сессиям, а на рынке возможны технологические перерывы и изменения расписания.
 
-Because the underlying engine is open source, you can always choose to run everything locally on your own hardware. Local execution requires technical setup and is intended for advanced users — the cloud version is built for convenience and a fast start with no configuration.
+## Локальный запуск
+
+Технически подготовленные пользователи могут использовать открытые компоненты движка в собственной среде. Такой сценарий требует самостоятельной настройки данных, секретов, мониторинга и интеграции с Финам Trade API. Возможность локального запуска конкретной версии стратегии нужно сверять с её технической документацией.
+
+<Warning>
+  Бэктест не воспроизводит реальный рынок полностью. Задержки, частичное исполнение, ликвидность и проскальзывание могут существенно изменить результат. Торговля ценными бумагами связана с риском убытков.
+</Warning>

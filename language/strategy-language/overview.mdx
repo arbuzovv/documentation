@@ -1,15 +1,15 @@
 ---
-title: "Overview"
-description: "The language surface you use inside a Ziplime algorithm file"
+title: "Обзор"
+description: "API, доступный внутри файла алгоритма Ziplime от Финама"
 ---
 
-This guide documents the language surface you use inside a Ziplime algorithm file. An algorithm file is ordinary Python, but Ziplime gives it a small event-driven API:
+В этом разделе описан API, доступный внутри файла алгоритма Ziplime от Финама. Сам файл алгоритма представляет собой обычный Python-код, а Ziplime дополняет его компактным событийным API:
 
-- `context` stores your strategy state and exposes trading functions.
-- `data` gives access to current and historical market data.
-- Lifecycle functions tell Ziplime when to set up, trade, prepare a session, and analyze results.
+- `context` хранит состояние стратегии и предоставляет торговые функции.
+- `data` предоставляет доступ к текущим и историческим рыночным данным.
+- Функции жизненного цикла сообщают Ziplime, когда нужно выполнить настройку, торговую логику, подготовку к сессии и анализ результатов.
 
-Most strategy work happens in two functions:
+Основная работа стратегии выполняется в двух функциях:
 
 ```python
 async def initialize(context):
@@ -19,22 +19,22 @@ async def handle_data(context, data):
     ...
 ```
 
-## Mental model
+## Модель работы
 
-`initialize` is your setup block. Look up assets, store parameters, register scheduled callbacks, and configure controls there.
+`initialize` — блок настройки. В нём находят инструменты, сохраняют параметры, регистрируют функции по расписанию и задают ограничения.
 
-`handle_data` is your trading block. It runs on every emitted bar, reads `data`, checks portfolio state, places orders, and records metrics.
+`handle_data` — блок торговой логики. Он запускается на каждом сформированном баре, читает `data`, проверяет состояние портфеля, размещает заявки и записывает метрики.
 
-`before_trading_start` is an optional daily preparation hook. Use it for daily universe selection or pipeline output. Do not place orders there.
+`before_trading_start` — необязательная функция ежедневной подготовки. Используйте её для выбора набора инструментов на день или получения результатов пайплайна. Не размещайте в ней заявки.
 
-`analyze` is an optional reporting hook after the backtest finishes.
+`analyze` — необязательная функция формирования отчёта после завершения бэктеста.
 
-## Minimal algorithm
+## Минимальный алгоритм
 
 ```python
 from ziplime.finance.execution import MarketOrder
 
-SYMBOLS = ["AAPL", "MSFT", "NVDA"]
+SYMBOLS = ["SBER", "GAZP", "LKOH"]
 
 
 async def initialize(context):
@@ -58,61 +58,61 @@ async def handle_data(context, data):
     context.record(target_weight=weight, cash=context.portfolio.cash)
 ```
 
-## Main objects
+## Основные объекты
 
-| Object | Where you receive it | What it is for |
+| Объект | Где доступен | Назначение |
 | --- | --- | --- |
-| `context` | Every lifecycle function | Persistent strategy state and trading API |
-| `data` | `handle_data`, scheduled callbacks, `before_trading_start` | Current and historical data |
-| `context.portfolio` | Any time after initialization | Cash, portfolio value, positions, returns |
-| `context.account` | Any time after initialization | Account and leverage metrics |
-| `perf` | `analyze(context, perf)` | Final performance table |
+| `context` | Во всех функциях жизненного цикла | Постоянное состояние стратегии и торговый API |
+| `data` | В `handle_data`, запланированных функциях и `before_trading_start` | Текущие и исторические данные |
+| `context.portfolio` | В любое время после инициализации | Денежные средства, стоимость портфеля, позиции и доходность |
+| `context.account` | В любое время после инициализации | Показатели счёта и кредитного плеча |
+| `perf` | В `analyze(context, perf)` | Итоговая таблица результатов |
 
-## Async rule of thumb
+## Простое правило для async
 
-Use `await` when calling functions that load data, look up assets, place orders, or cancel orders:
+Используйте `await` при вызове функций, которые загружают данные, находят инструменты, размещают или отменяют заявки:
 
 ```python
 from ziplime.finance.execution import MarketOrder
 
-asset = await context.symbol("AAPL")
+asset = await context.symbol("SBER")
 prices = await data.history(assets=[asset], fields=["close"], bar_count=20)
 order = await context.order_target_percent(asset, 0.25, style=MarketOrder())
 ```
 
-In the current runtime:
+В текущей версии среды:
 
-| Function | Should be async? | Notes |
+| Функция | Должна быть асинхронной? | Примечание |
 | --- | --- | --- |
-| `initialize(context)` | Yes | Ziplime awaits it. |
-| `handle_data(context, data)` | Yes | Ziplime awaits it on every bar. |
-| Scheduled callbacks | Yes | Ziplime awaits callbacks registered by `schedule_function`. |
-| `before_trading_start(context, data)` | No | Called synchronously. |
-| `analyze(context, perf)` | No | Called synchronously after the run. |
+| `initialize(context)` | Да | Ziplime ожидает её через `await`. |
+| `handle_data(context, data)` | Да | Ziplime ожидает её через `await` на каждом баре. |
+| Запланированные функции | Да | Ziplime ожидает через `await` функции, зарегистрированные методом `schedule_function`. |
+| `before_trading_start(context, data)` | Нет | Вызывается синхронно. |
+| `analyze(context, perf)` | Нет | Вызывается синхронно после завершения запуска. |
 
-## API map
+## Карта API
 
-| Task | Primary functions |
+| Задача | Основные функции |
 | --- | --- |
-| Look up assets | `context.symbol`, `context.sid`, `context.future_symbol`, `context.symbols_universe` |
-| Read current data | `await data.current(...)` |
-| Read trailing windows | `await data.history(...)` |
-| Place orders | `context.order`, `context.order_target`, `context.order_target_percent`, `context.order_percent`, `context.order_target_value` |
-| Inspect orders | `context.get_open_orders`, `context.get_order`, `context.cancel_order` |
-| Inspect portfolio | `context.portfolio`, `context.account`, portfolio helper methods |
-| Record metrics | `context.record(...)` |
-| Schedule callbacks | `context.schedule_function(...)`, `date_rules`, `time_rules` |
-| Configure controls | `context.set_long_only`, `context.set_max_leverage`, `context.set_max_position_size`, `context.set_max_order_size`, `context.set_max_order_count` |
-| Use pipelines | `context.attach_pipeline`, `context.pipeline_output` |
-| Migrate old Zipline code | [Migrating from Classic Zipline](/language/strategy-language/zipline-migration) |
+| Найти инструменты | `context.symbol`, `context.sid`, `context.future_symbol`, `context.symbols_universe` |
+| Получить текущие данные | `await data.current(...)` |
+| Получить историческое окно | `await data.history(...)` |
+| Разместить заявку | `context.order`, `context.order_target`, `context.order_target_percent`, `context.order_percent`, `context.order_target_value` |
+| Проверить заявки | `context.get_open_orders`, `context.get_order`, `context.cancel_order` |
+| Проверить портфель | `context.portfolio`, `context.account`, вспомогательные методы портфеля |
+| Записать метрики | `context.record(...)` |
+| Запланировать функции | `context.schedule_function(...)`, `date_rules`, `time_rules` |
+| Настроить ограничения | `context.set_long_only`, `context.set_max_leverage`, `context.set_max_position_size`, `context.set_max_order_size`, `context.set_max_order_count` |
+| Использовать пайплайны | `context.attach_pipeline`, `context.pipeline_output` |
+| Перенести старый код Zipline | [«Миграция с классического Zipline»](/language/strategy-language/zipline-migration) |
 
-## Recommended reading order
+## Рекомендуемый порядок чтения
 
-1. [Algorithm file](/language/strategy-language/algorithm-file)
-2. [Context API](/language/strategy-language/context-api)
-3. [Market data](/language/strategy-language/market-data)
-4. [Orders](/language/strategy-language/orders)
-5. [Portfolio and recording](/language/strategy-language/portfolio-and-recording)
-6. [Scheduling and controls](/language/strategy-language/scheduling-and-controls)
-7. [Pipelines](/language/strategy-language/pipelines)
-8. [Migrating from Classic Zipline](/language/strategy-language/zipline-migration)
+1. [Файл алгоритма](/language/strategy-language/algorithm-file)
+2. [API объекта context](/language/strategy-language/context-api)
+3. [Рыночные данные](/language/strategy-language/market-data)
+4. [Заявки](/language/strategy-language/orders)
+5. [Портфель и запись метрик](/language/strategy-language/portfolio-and-recording)
+6. [Расписание и ограничения](/language/strategy-language/scheduling-and-controls)
+7. [Пайплайны](/language/strategy-language/pipelines)
+8. [Миграция с классического Zipline](/language/strategy-language/zipline-migration)

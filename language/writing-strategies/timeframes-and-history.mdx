@@ -1,21 +1,18 @@
 ---
-title: "Timeframes & History Depth"
-description: "Supported intervals and how far back data goes"
+title: "Таймфреймы и глубина истории"
+description: "Поддерживаемые интервалы и доступность исторических данных"
 ---
 
-## Timeframes
+## Таймфреймы
 
-The minimum backtest interval is **1 minute**. From there, you can aggregate to 2, 3, 4 minutes, or any larger interval you need — up to daily and beyond.
+Минимальный интервал бэктеста — **1 минута**. Минутные данные можно агрегировать в интервалы по 2, 3, 4 минуты и более, вплоть до дневных и более крупных таймфреймов.
 
-## History depth
+## Глубина истории
 
-Historical data is available from **2005** to the present.
+Глубина доступной истории зависит от инструмента, режима торгов и источника данных. Перед запуском исследования проверьте диапазон для нужного тикера Мосбиржи — например, **SBER**, **GAZP** или **LKOH** — и наличие данных на выбранном таймфрейме.
 
-| Environment | Delay |
-| --- | --- |
-| Russia | No delay |
-| US | 15 minutes |
+Доступность текущих данных и возможная задержка также зависят от рыночного режима, условий подключения и прав на данные. Для реальной торговли и получения данных из брокерского контура используйте [Finam Trade API](https://api.finam.ru/); актуальные ограничения проверяйте в документации API.
 
 <Warning>
-  The engine is not intended for strategies where outcomes depend on sub-second timing (high-frequency trading, latency arbitrage). See [Limitations](/language/limitations/not-for-hft).
+  Движок не предназначен для стратегий, результат которых зависит от субсекундного времени исполнения, включая высокочастотную торговлю и арбитраж задержек. Подробнее — в разделе [«Ограничения»](/language/limitations/not-for-hft).
 </Warning>

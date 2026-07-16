@@ -1,22 +1,24 @@
 ---
-title: "Engine & Technology"
-description: "What powers Ziplime's backtests"
+title: "Движок и технологии"
+description: "Технологическая основа бэктестов в Ziplime от Финама"
 ---
 
-Strategy backtesting is built on **Zipline**, the engine that once powered the well-known Quantopian platform. The engine is open source, and its code is maintained by the Ziplime team: [github.com/Limex-com/ziplime](https://github.com/Limex-com/ziplime). That gives it a track record most retail tools don't have — a technology that's been battle-tested over time, with the source available to inspect.
+В основе тестирования стратегий лежит **Zipline** — открытый событийный движок, который использовался на платформе Quantopian. Ziplime развивает собственный набор компонентов поверх этой архитектуры и адаптирует её к единому процессу исследования и исполнения стратегий. Исходный проект Zipline доступен на [GitHub](https://github.com/quantopian/zipline).
 
-## Beyond the standard engine
+## Возможности поверх базового движка
 
-On top of classic daily and minute-bar backtesting, the platform works with **fundamental data** (financial statements, multiples) and **alternative data** — a depth of analysis most retail tools don't offer.
+Платформа поддерживает работу с дневными и внутридневными данными в рамках доступных наборов. Фундаментальные и альтернативные данные можно использовать, только если соответствующий источник подключён в российском контуре и доступен пользователю.
 
-## Technical improvements
+## Технические особенности
 
-The engine has been reworked for Ziplime's needs. Key functions are asynchronous, so a strategy behaves the same way on historical data as it does in live trading. Calculations are accelerated with the **Polars** library, and select components are implemented in **Rust**.
+Часть функций Ziplime реализована асинхронно, чтобы сблизить программную модель бэктеста и реального исполнения. Для обработки таблиц используется **Polars**, а отдельные вычислительно нагруженные компоненты могут быть ускорены с помощью **Rust**.
 
-## Working with strategies
+Одинаковая структура кода для исследования и реального запуска уменьшает объём доработок, но не делает результаты идентичными: на реальном рынке влияют ликвидность, задержки, очередность исполнения, комиссии и проскальзывание.
 
-Each strategy's parameters can be pulled out and adjusted independently of its logic, which makes optimization easier. Strategy code is stored with full version history, so you can always see what changed and when — a strategy is an evolving project, not a one-off result.
+## Работа со стратегиями
 
-The platform doesn't restrict the type of strategy you can build — portfolio, pairs, momentum, or anything else.
+Параметры стратегии можно отделять от её логики, чтобы удобнее проводить серии экспериментов. При наличии функции версионирования изменения кода и результаты запусков сохраняются для последующего сравнения.
 
-See [Engine Overview](/language/introduction/engine-overview) in the Backtesting Language section for more technical detail.
+Движок подходит для портфельных, парных, моментум-стратегий, возврата к среднему и других среднечастотных подходов. Реальная применимость зависит от доступных данных, инструментов, расписания торгов и ограничений брокерского счёта.
+
+Технические подробности приведены в разделе [«Обзор движка»](/language/introduction/engine-overview).

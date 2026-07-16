@@ -1,18 +1,18 @@
 ---
-title: "Pipelines"
-description: "Computing cross-sectional factors and filters for universe selection"
+title: "Пайплайны"
+description: "Расчёт кросс-секционных факторов и фильтров для выбора набора инструментов"
 ---
 
-Pipelines are an advanced way to compute cross-sectional factors and filters for many assets before your trading logic runs. They are useful for universe selection, ranking, and factor-based strategies.
+Пайплайны — расширенный механизм расчёта кросс-секционных факторов и фильтров по множеству инструментов до запуска торговой логики. Они подходят для отбора набора инструментов, ранжирования и факторных стратегий.
 
-Pipeline support depends on having the right data loaders configured. The standard run path wires pricing data for `EquityPricing`; custom datasets require custom loaders.
+Поддержка пайплайнов зависит от настройки подходящих загрузчиков данных. Стандартный путь запуска подключает ценовые данные для `EquityPricing`; для пользовательских наборов данных нужны собственные загрузчики.
 
-## Basic idea
+## Основной принцип
 
-1. Build a `Pipeline` object.
-2. Attach it in `initialize`.
-3. Read its output after initialization, usually in `before_trading_start`.
-4. Use the output to choose assets or target weights.
+1. Создайте объект `Pipeline`.
+2. Подключите его в `initialize`.
+3. Получите результат после инициализации — обычно в `before_trading_start`.
+4. Используйте результат для выбора инструментов или целевых весов.
 
 ```python
 from ziplime.pipeline import Pipeline
@@ -36,7 +36,7 @@ def before_trading_start(context, data):
     context.signals = context.pipeline_output("signals")
 ```
 
-## Building a pipeline
+## Создание пайплайна
 
 ```python
 from ziplime.pipeline import Pipeline
@@ -49,7 +49,7 @@ pipe = Pipeline(
 )
 ```
 
-You can add columns after construction:
+Столбцы можно добавить и после создания объекта:
 
 ```python
 pipe = Pipeline()
@@ -57,9 +57,9 @@ pipe.add(EquityPricing.close.latest, "close")
 pipe.add(EquityPricing.volume.latest, "volume")
 ```
 
-## Screens
+## Фильтры screen
 
-A screen filters which assets appear in the output.
+Параметр `screen` определяет, какие инструменты попадут в результат.
 
 ```python
 from ziplime.pipeline.terms.factors import AverageDollarVolume
@@ -73,15 +73,17 @@ pipe = Pipeline(
 )
 ```
 
-You can also set a screen after construction:
+Для инструментов MOEX фактор `AverageDollarVolume` отражает средний денежный объём в валюте котировки — как правило, в рублях. Имя класса остаётся неизменным как часть API.
+
+Фильтр также можно задать после создания пайплайна:
 
 ```python
 pipe.set_screen(screen, overwrite=True)
 ```
 
-## Common factor examples
+## Примеры распространённых факторов
 
-### Latest OHLCV values
+### Последние значения OHLCV
 
 ```python
 pipe = Pipeline(columns={
@@ -90,7 +92,7 @@ pipe = Pipeline(columns={
 })
 ```
 
-### Moving average
+### Скользящая средняя
 
 ```python
 from ziplime.pipeline.terms.factors import SimpleMovingAverage
@@ -101,7 +103,7 @@ sma_50 = SimpleMovingAverage(
 )
 ```
 
-### Returns
+### Доходность
 
 ```python
 from ziplime.pipeline.terms.factors import Returns
@@ -109,7 +111,7 @@ from ziplime.pipeline.terms.factors import Returns
 returns_20 = Returns(window_length=20)
 ```
 
-### Average dollar volume
+### Средний денежный объём
 
 ```python
 from ziplime.pipeline.terms.factors import AverageDollarVolume
@@ -117,20 +119,20 @@ from ziplime.pipeline.terms.factors import AverageDollarVolume
 adv_20 = AverageDollarVolume(window_length=20)
 ```
 
-## Ranking and filtering
+## Ранжирование и фильтрация
 
-Factors support methods such as:
+Факторы поддерживают, в частности, следующие методы:
 
-| Method | Meaning |
+| Метод | Значение |
 | --- | --- |
-| `factor.top(N)` | Keep the top N assets by factor value |
-| `factor.bottom(N)` | Keep the bottom N assets |
-| `factor.percentile_between(min, max)` | Keep assets between percentile bounds |
-| `factor.rank()` | Rank assets by value |
-| `factor.zscore()` | Cross-sectional z-score |
-| `factor.demean()` | Subtract cross-sectional mean |
+| `factor.top(N)` | Оставить N инструментов с наибольшим значением фактора |
+| `factor.bottom(N)` | Оставить N инструментов с наименьшим значением фактора |
+| `factor.percentile_between(min, max)` | Оставить инструменты внутри заданного диапазона процентилей |
+| `factor.rank()` | Ранжировать инструменты по значению |
+| `factor.zscore()` | Рассчитать кросс-секционную z-оценку |
+| `factor.demean()` | Вычесть кросс-секционное среднее |
 
-Example:
+Пример:
 
 ```python
 momentum = Returns(window_length=60)
@@ -143,9 +145,9 @@ pipe = Pipeline(
 )
 ```
 
-## Reading pipeline output
+## Получение результата пайплайна
 
-`context.pipeline_output(name)` is available after initialization.
+Метод `context.pipeline_output(name)` доступен после инициализации.
 
 ```python
 def before_trading_start(context, data):
@@ -153,11 +155,11 @@ def before_trading_start(context, data):
     context.todays_assets = list(output.index)
 ```
 
-The output type follows the pipeline engine and loader path. In Zipline-compatible paths it is a pandas DataFrame indexed by asset for the current session.
+Тип результата определяется движком пайплайна и выбранным загрузчиком. На путях, совместимых с Zipline, это pandas DataFrame с индексом по инструментам текущей сессии.
 
-## Custom factors
+## Пользовательские факторы
 
-Use `CustomFactor` for calculations that are not covered by built-in factors.
+Используйте `CustomFactor` для расчётов, которых нет среди встроенных факторов.
 
 ```python
 import numpy as np
@@ -174,22 +176,22 @@ class CloseRange(CustomFactor):
         out[:] = np.nanmax(close, axis=0) - np.nanmin(close, axis=0)
 ```
 
-Add it to a pipeline:
+Добавьте фактор в пайплайн:
 
 ```python
 pipe = Pipeline(columns={"close_range": CloseRange()})
 ```
 
-## When to use pipelines
+## Когда использовать пайплайны
 
-Use pipelines when:
+Используйте пайплайны, если:
 
-- You need a daily ranked universe.
-- You compute the same cross-sectional factors for many assets.
-- You want to keep expensive universe-selection logic outside `handle_data`.
+- Нужен ежедневно ранжируемый набор инструментов.
+- Один и тот же кросс-секционный фактор рассчитывается для множества инструментов.
+- Ресурсоёмкую логику отбора инструментов нужно вынести из `handle_data`.
 
-Use `data.current` and `data.history` directly when:
+Обращайтесь напрямую к `data.current` и `data.history`, если:
 
-- You trade only a small fixed list of assets.
-- Your signal is simple and per-asset.
-- You do not need cross-sectional ranking.
+- Стратегия торгует небольшим фиксированным набором инструментов.
+- Сигнал прост и рассчитывается отдельно для каждого инструмента.
+- Кросс-секционное ранжирование не требуется.

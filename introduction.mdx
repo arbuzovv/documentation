@@ -1,119 +1,65 @@
 ---
-title: "ZipLime"
-description: "Introduction to web platform"
+title: "Ziplime от Финама"
+description: "Платформа для разработки и тестирования алгоритмических стратегий на российском рынке"
 ---
 
-Ziplime is a cutting-edge platform designed to democratize algorithmic trading by providing ordinary users with the tools to create, backtest, analyze, and deploy trading strategies on real trading accounts. The platform integrates advanced AI capabilities to assist users in writing, debugging, optimizing, and enhancing their trading algorithms. Ziplime leverages the robust Zipline backtesting engine, which was once the core of Quantopian, and extends its functionality with additional features such as fundamental and alternative data. This documentation will guide you through the key features and functionalities of Ziplime.
+**Ziplime от Финама** помогает описать торговую идею обычным языком, превратить её в Python-стратегию, проверить на исторических данных и подготовить к запуску через инфраструктуру Финама.
 
-## Key Features
+В основе бэктестинга лежит событийная модель Zipline, дополненная асинхронным API и современным стеком обработки данных.
 
-### AI-Powered Code Assistance
+## Основные возможности
 
-Ziplime's built-in AI assists users in:
+<CardGroup cols={2}>
+  <Card title="ИИ-помощник" icon="sparkles">
+    Генерирует код стратегии, объясняет его, находит ошибки и предлагает варианты улучшения.
+  </Card>
 
-* **Writing Code:** Generate trading algorithms based on user descriptions.
+  <Card title="Бэктестинг" icon="chart-line">
+    Проверяет стратегию на исторических данных с учётом выбранных параметров и торговых издержек.
+  </Card>
 
-* **Debugging Code:** Identify and fix errors in the code.
+  <Card title="Анализ результатов" icon="chart-column">
+    Показывает динамику капитала, просадки, сделки и ключевые показатели риска.
+  </Card>
 
-* **Optimizing Code:** Improve the performance and efficiency of trading strategies.
+  <Card title="Российский контур" icon="landmark">
+    В примерах используются инструменты Московской биржи, рублёвые расчёты и сервисы Финама.
+  </Card>
+</CardGroup>
 
-* **Enhancing Code:** Provide suggestions for additional features and improvements.
+## Типовой сценарий
 
-### Backtesting Engine
+<Steps>
+  <Step title="Опишите идею">
+    Укажите инструменты, правила входа и выхода, таймфрейм, ограничения риска и способ распределения капитала.
+  </Step>
 
-Ziplime uses the Zipline backtesting engine, enhanced with:
+  <Step title="Проверьте код">
+    ИИ создаст Python-стратегию. Просмотрите используемые данные, параметры и предположения модели исполнения.
+  </Step>
 
-* **Daily and Minute Data:** Backtest strategies on both daily and minute-level data.
+  <Step title="Запустите бэктест">
+    Выберите период, частоту данных, стартовый капитал и настройки комиссий.
+  </Step>
 
-* **Fundamental and Alternative Data:** Incorporate fundamental and alternative datasets for more comprehensive backtesting.
+  <Step title="Оцените результат">
+    Сравните доходность с ориентиром, изучите просадку, устойчивость и чувствительность к параметрам.
+  </Step>
 
-### Cloud-Based Execution
+  <Step title="Подготовьте реальную торговлю">
+    Проверьте доступность инструментов и права счёта, настройте риск-лимиты и подключение к Финам Trade API.
+  </Step>
+</Steps>
 
-* **Cloud Backtesting:** Run backtests in the cloud using internal data.
+## Пример запроса
 
-* **Results Visualization:** View backtest results through detailed graphs, tables, and reports.
+~~~text
+Создай среднесрочную стратегию для акций SBER, GAZP и LKOH на Московской бирже.
+Раз в неделю выбирай две бумаги с наибольшей доходностью за последние 60 торговых дней.
+Распределяй капитал поровну, ограничь долю одной позиции 50% и учитывай комиссии.
+Покажи максимальную просадку и сравнение с индексом МосБиржи.
+~~~
 
-### Historical Backtest Management
-
-* **Save and Compare:** Save all backtests and compare historical performance with current strategies.
-
-### Data Coverage
-
-Ziplime supports backtesting on:
-
-* **US Stocks:** Comprehensive data on American equities (TOP 1500 stocks).
-
-* **ETFs:** Extensive coverage of Exchange-Traded Funds (TOP 500 ETFs).
-
-* **Futures:** Data on futures contracts for diversified strategy testing (TOP 50 futures).
-
-### &#xA;Creating a New Strategy
-
-1. **Describe Your Strategy:** Provide a detailed description of your trading strategy.
-
-2. **AI Code Generation:** Use the AI to generate the initial code for your strategy.
-
-3. **Review and Edit:** Review the generated code and make any necessary adjustments.
-
-### Running a Backtest
-
-1. **Select Data:** Choose the dataset (daily, minute, fundamental, or alternative) for your backtest.
-
-2. **Run Backtest:** Execute the backtest in the cloud.
-
-3. **Analyze Results:** Examine the results through interactive graphs, tables, and reports.
-
-### Managing Backtests
-
-1. **Save Backtest:** Save the backtest results for future reference.
-
-2. **Compare Backtests:** Compare the performance of different backtests to evaluate strategy improvements.
-
-## Example Workflow
-
-### Step 1: Strategy Description
-
-```
-I want to create a momentum-based trading strategy
-that buys stocks that have increased by more than 5%
-in the last 10 days and sells them after a 10% gain
-or a 5% loss.
-```
-
-### Step 2: AI Code Generation
-
-<CodeGroup>
-  ```python zipline.py
-  from zipline.api import order, record, symbol
-
-  def initialize(context):
-      context.lookback = 10
-      context.gain_threshold = 0.10
-      context.loss_threshold = -0.05
-
-  def handle_data(context, data):
-      for stock in context.portfolio.positions:
-          current_price = data.current(stock, 'price')
-          historical_prices = data.history(stock, 'price', bar_count=context.lookback, frequency='1d')
-          price_change = (current_price - historical_prices[0]) / historical_prices[0]
-          
-          if price_change > 0.05:
-              order(stock, 1)
-          elif price_change > context.gain_threshold or price_change < context.loss_threshold:
-              order(stock, -1)
-  ```
-</CodeGroup>
-
-### Step 3: Running the Backtest
-
-1. **Select Data:** Choose daily data for US stocks.
-
-2. **Run Backtest:** Execute the backtest in the cloud.
-
-3. **Analyze Results:** Review the performance metrics and visualizations.
-
-### Step 4: Saving and Comparing
-
-1. **Save Backtest:** Save the backtest results.
-
-2. **Compare Backtests:** Compare with previous backtests to assess strategy improvements.
+<Warning>
+  Результаты бэктеста не гарантируют будущую доходность. Проверьте качество данных, ликвидность, комиссии, проскальзывание и ограничения брокерского счёта до запуска стратегии.
+</Warning>

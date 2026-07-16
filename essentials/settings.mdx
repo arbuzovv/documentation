@@ -1,23 +1,33 @@
 ---
-title: "Settings"
-description: "Ziplime offers a range of configurable parameters, allowing users to tailor their backtesting environment and optimize the development of trading strategies. These options enhance flexibility and enable a personalized approach to algorithmic trading. Below are key parameters that can be adjusted within the platform:"
+title: "Настройки бэктеста"
+description: "Параметры тестирования стратегии в Ziplime от Финама"
 icon: "gear"
 ---
 
-**Backtest Frequency**
+## Частота данных
 
-* **Daily or Minute Data**: Users can set the frequency of their backtests to either daily or minute intervals. By default, backtests are conducted using minute data, providing high-resolution insights into strategy performance. However, switching to daily data can be beneficial for broader trend analysis and less granular strategies.
+Выберите частоту, которая соответствует логике стратегии и доступна для нужных инструментов. Минутные данные подходят для внутридневных правил, дневные — для среднесрочных и портфельных моделей.
 
-#### Backtest Period
+## Период теста
 
-* **Customizable Timeframe**: You can define the specific time period over which your backtests will be conducted. This flexibility allows traders to test strategies over historical data spanning different market conditions, ensuring robustness and adaptability of the strategy.
+Период должен охватывать разные рыночные режимы. Не оценивайте стратегию только на интервале, под который подбирались параметры.
 
-#### AI Assistant Configuration
+## Стартовый капитал
 
-* **Strategic Guidance**: Customize the AI assistant settings to better fit your strategy development needs. Adjust the level of assistance, from providing basic code suggestions to offering complex optimizations and enhancements. This feature ensures that the AI functions as an effective collaborator in crafting and refining your trading algorithms.
+Указывайте капитал в валюте портфеля. Для российского контура типовой пример — рубли. Убедитесь, что размеры позиций реалистичны с учётом лотов и ликвидности.
 
-#### Server Selection
+## Комиссии и проскальзывание
 
-* **Computation Environment**: Choose from a selection of servers to run your backtests and computations. This option allows for optimization of computational resources based on your specific requirements, such as processing speed and data handling capabilities, ensuring efficient and timely strategy evaluations.
+Используйте актуальные параметры выбранного счёта и инструмента. Чувствительность результата к издержкам полезно проверять отдельными сценариями.
 
-By adjusting these parameters, users have greater control over their trading simulations and development process, enabling a more precise and effective approach to algorithmic trading on the Ziplime platform.
+## Ориентир
+
+Выберите осмысленный бенчмарк: индекс МосБиржи, безрисковую ставку или простую стратегию «купить и держать» — в зависимости от задачи.
+
+## Параметры ИИ
+
+ИИ может объяснять код, исправлять ошибки и предлагать оптимизацию. Окончательная проверка логики, данных и рисков остаётся за пользователем.
+
+<Warning>
+  Оптимизация по одному историческому периоду повышает риск переобучения. Отделяйте период настройки от периода проверки.
+</Warning>

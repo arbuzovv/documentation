@@ -1,15 +1,15 @@
 ---
-title: "Scheduling & Controls"
-description: "Running callbacks at specific times and enforcing risk rules"
+title: "Расписание и ограничения"
+description: "Запуск функций в заданное время и применение правил управления рисками"
 ---
 
-Use scheduled functions when your strategy should run at specific times instead of on every bar. Use controls to enforce simple risk rules before orders are accepted.
+Используйте функции по расписанию, если стратегия должна выполняться в определённое время, а не на каждом баре. Ограничения позволяют применять простые правила управления рисками до принятия заявок.
 
-## Scheduling callbacks
+## Функции по расписанию
 
 ### `context.schedule_function(func, date_rule=None, time_rule=None, half_days=True, calendar=None)`
 
-Register an async callback with the same signature as `handle_data`.
+Регистрирует асинхронную функцию обратного вызова с той же сигнатурой, что и `handle_data`.
 
 ```python
 from ziplime.finance.execution import MarketOrder
@@ -17,7 +17,7 @@ from ziplime.utils.events import date_rules, time_rules
 
 
 async def initialize(context):
-    context.asset = await context.symbol("AAPL")
+    context.asset = await context.symbol("SBER")
     context.schedule_function(
         rebalance,
         date_rule=date_rules.week_start(),
@@ -29,25 +29,25 @@ async def rebalance(context, data):
     await context.order_target_percent(context.asset, 1.0, style=MarketOrder())
 ```
 
-In daily simulations, the `time_rule` is ignored by the current scheduler because there is only one bar per session. In minute simulations, both date and time rules matter.
+В дневных симуляциях текущий планировщик игнорирует `time_rule`, потому что на одну сессию приходится только один бар. В минутных симуляциях важны и правило даты, и правило времени.
 
-## Date rules
+## Правила дат
 
-Import from `ziplime.utils.events` or `ziplime.api`.
+Импортируйте их из `ziplime.utils.events` или `ziplime.api`.
 
 ```python
 from ziplime.utils.events import date_rules
 ```
 
-| Rule | Meaning |
+| Правило | Значение |
 | --- | --- |
-| `date_rules.every_day()` | Every trading day |
-| `date_rules.week_start(days_offset=0)` | Nth trading day of each week |
-| `date_rules.week_end(days_offset=0)` | N trading days before week end |
-| `date_rules.month_start(days_offset=0)` | Nth trading day of each month |
-| `date_rules.month_end(days_offset=0)` | N trading days before month end |
+| `date_rules.every_day()` | Каждый торговый день |
+| `date_rules.week_start(days_offset=0)` | N-й торговый день каждой недели |
+| `date_rules.week_end(days_offset=0)` | За N торговых дней до конца недели |
+| `date_rules.month_start(days_offset=0)` | N-й торговый день каждого месяца |
+| `date_rules.month_end(days_offset=0)` | За N торговых дней до конца месяца |
 
-Examples:
+Примеры:
 
 ```python
 date_rules.every_day()
@@ -57,21 +57,21 @@ date_rules.month_start(days_offset=2)
 date_rules.month_end()
 ```
 
-## Time rules
+## Правила времени
 
 ```python
 from ziplime.utils.events import time_rules
 ```
 
-| Rule | Meaning |
+| Правило | Значение |
 | --- | --- |
-| `time_rules.market_open(minutes=30)` | 30 minutes after market open |
-| `time_rules.market_close(minutes=15)` | 15 minutes before market close |
-| `time_rules.every_minute()` | Every minute in minute simulations |
+| `time_rules.market_open(minutes=30)` | Через 30 минут после открытия рынка |
+| `time_rules.market_close(minutes=15)` | За 15 минут до закрытия рынка |
+| `time_rules.every_minute()` | Каждую минуту в минутной симуляции |
 
-Offsets must be between 1 minute and 12 hours.
+Смещение должно составлять от 1 минуты до 12 часов.
 
-Examples:
+Примеры:
 
 ```python
 time_rules.market_open()
@@ -79,94 +79,93 @@ time_rules.market_open(hours=1)
 time_rules.market_close(minutes=30)
 ```
 
-## Calendars
+## Торговые календари
 
-`schedule_function` accepts `calendar=calendars.US_EQUITIES` or `calendar=calendars.US_FUTURES`.
+Параметр `calendar` метода `schedule_function` принимает объект торгового календаря. Для российского контура обычно лучше не передавать его явно: тогда Ziplime использует календарь симуляции, настроенный для MOEX.
 
 ```python
-from ziplime.utils.events import calendars
-
 context.schedule_function(
     rebalance,
     date_rule=date_rules.month_end(),
     time_rule=time_rules.market_close(minutes=30),
-    calendar=calendars.US_EQUITIES,
 )
 ```
 
-If `calendar` is omitted, Ziplime uses the simulation trading calendar.
+Если запуск работает сразу с несколькими календарями, передайте в `calendar` объект, зарегистрированный в вашей среде. Не подменяйте его строкой MIC: тип параметра и доступные константы зависят от конфигурации среды.
 
-## `before_trading_start` vs scheduled callbacks
+## `before_trading_start` и функции по расписанию
 
-Use `before_trading_start` for daily preparation that should happen before trading logic.
+Используйте `before_trading_start` для ежедневной подготовки, которую нужно завершить до выполнения торговой логики.
 
-Use scheduled callbacks for trading actions that should occur at a specific session time.
+Функции по расписанию подходят для торговых действий в заданный момент сессии.
 
-| Hook | Can place orders? | Async? | Common use |
+| Механизм | Можно размещать заявки? | Асинхронный? | Типичное применение |
 | --- | --- | --- | --- |
-| `before_trading_start` | No | No | Prepare universe, reset daily state, read pipeline output |
-| Scheduled callback | Yes | Yes | Rebalance, exit, risk reduction |
-| `handle_data` | Yes | Yes | Main per-bar trading logic |
+| `before_trading_start` | Нет | Нет | Подготовка набора инструментов, сброс дневного состояния, чтение результата пайплайна |
+| Функция по расписанию | Да | Да | Ребалансировка, выход из позиций, снижение риска |
+| `handle_data` | Да | Да | Основная торговая логика на каждом баре |
 
-## Trading controls
+## Торговые ограничения
 
-Controls are usually configured in `initialize`.
+Ограничения обычно настраивают в `initialize`.
 
-### Long-only
+### Только длинные позиции
 
 ```python
 async def initialize(context):
     context.set_long_only()
 ```
 
-### Maximum leverage
+### Максимальное кредитное плечо
 
 ```python
 async def initialize(context):
     context.set_max_leverage(1.5)
 ```
 
-`run_simulation(..., max_leverage=...)` also registers a leverage control.
+Параметр `run_simulation(..., max_leverage=...)` также регистрирует ограничение плеча.
 
-### Maximum position size
+### Максимальный размер позиции
 
 ```python
 async def initialize(context):
     context.set_max_position_size(
         asset=None,
-        max_shares=1_000,
-        max_notional=50_000,
+        max_shares=10_000,
+        max_notional=5_000_000,
     )
 ```
 
-Pass an `asset` to limit only that asset. Use `asset=None` to apply the limit globally.
+Для портфеля в RUB значение `max_notional` в примере равно 5 000 000 рублей. Передайте `asset`, чтобы ограничение действовало только для этого инструмента, или `asset=None`, чтобы применить его ко всем инструментам.
 
-### Maximum order size
+### Максимальный размер заявки
 
 ```python
 async def initialize(context):
     context.set_max_order_size(
-        max_shares=500,
-        max_notional=25_000,
+        max_shares=5_000,
+        max_notional=2_500_000,
     )
 ```
 
-### Maximum order count
+Денежное значение `max_notional` задаётся в валюте портфеля.
+
+### Максимальное число заявок
 
 ```python
 async def initialize(context):
     context.set_max_order_count(10)
 ```
 
-### Error behavior
+### Поведение при ошибке
 
-Most controls accept `on_error="fail"` by default. Depending on the control implementation, `"fail"` raises when a rule is violated. Use non-failing modes only when you intentionally want violations to be logged or ignored by that control.
+Большинство ограничений по умолчанию принимает `on_error="fail"`. В зависимости от реализации ограничения значение `"fail"` вызывает исключение при нарушении правила. Используйте режимы без исключения только тогда, когда осознанно хотите лишь записывать нарушения в журнал или игнорировать их.
 
-## Asset restrictions
+## Ограничения по инструментам
 
-`context.set_asset_restrictions(restrictions, on_error="fail")` registers a restricted list.
+Метод `context.set_asset_restrictions(restrictions, on_error="fail")` регистрирует список запрещённых инструментов.
 
-Restriction classes are available from `ziplime.finance.asset_restrictions` and through `ziplime.api`:
+Классы ограничений доступны в `ziplime.finance.asset_restrictions` и через `ziplime.api`:
 
 ```python
 from ziplime.finance.asset_restrictions import StaticRestrictions
@@ -177,9 +176,9 @@ async def initialize(context):
     context.set_asset_restrictions(restricted)
 ```
 
-## Cancel policies
+## Политики отмены
 
-Import from `ziplime.finance.cancel_policy` or `ziplime.api`.
+Импортируйте их из `ziplime.finance.cancel_policy` или `ziplime.api`.
 
 ```python
 from ziplime.finance.cancel_policy import EODCancel, NeverCancel
@@ -189,14 +188,14 @@ async def initialize(context):
     context.set_cancel_policy(EODCancel(warn_on_cancel=True))
 ```
 
-| Policy | Meaning |
+| Политика | Значение |
 | --- | --- |
-| `EODCancel(warn_on_cancel=True)` | Cancel open orders at session end. |
-| `NeverCancel()` | Leave open orders active until filled or manually canceled. |
+| `EODCancel(warn_on_cancel=True)` | Отменять открытые заявки в конце сессии. |
+| `NeverCancel()` | Оставлять заявки активными до исполнения или ручной отмены. |
 
-## Commission and slippage setup
+## Настройка комиссии и проскальзывания
 
-Backtest fill models are most commonly configured in `run_simulation(...)`:
+В бэктестах модели исполнения чаще всего настраиваются в `run_simulation(...)`:
 
 ```python
 from ziplime.finance.commission import PerDollar
@@ -209,4 +208,6 @@ result = await run_simulation(
 )
 ```
 
-Zipline-style `context.set_commission(...)` and `context.set_slippage(...)` are available during initialization. Use them only when your exchange/blotter setup is designed to read those context-level models. For standard `run_simulation` usage, prefer the explicit runner parameters.
+`PerDollar` — неизменяемое имя класса API; модель применяется к денежному обороту в валюте расчётов среды, в российском контуре обычно в рублях.
+
+Совместимые с Zipline методы `context.set_commission(...)` и `context.set_slippage(...)` доступны во время инициализации. Используйте их только тогда, когда конфигурация биржи и blotter рассчитана на модели уровня `context`. Для стандартного вызова `run_simulation` предпочтительнее явные параметры функции запуска.

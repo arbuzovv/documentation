@@ -1,12 +1,14 @@
 ---
-title: "From Quik"
-description: "Bringing Lua strategies to Ziplime"
+title: "Переход с QUIK"
+description: "Перенос стратегий на Lua в Ziplime от Финама"
 ---
 
-If you have strategies written in **Lua** for Quik, Ziplime's AI can convert that logic into Python for its own engine.
+Если у вас есть стратегия на **Lua** для QUIK, ИИ в **Ziplime от Финама** поможет перенести её логику на Python для движка Ziplime/Zipline.
 
-Share your existing Lua script or describe what it does, and the agent team will rebuild the strategy in Python, connect it to Ziplime's data, and flag anything that needed to change in the translation. Once converted, you can keep iterating through [chat, code blocks, or full code](/language/writing-strategies/three-levels).
+Передайте существующий Lua-скрипт или опишите его поведение. Команда агентов воссоздаст стратегию на Python, подключит данные и отметит части, которые пришлось изменить. После конвертации продолжайте работу через [чат, готовые блоки или полный код](/language/writing-strategies/three-levels).
+
+Тикеры Мосбиржи, такие как **SBER**, **GAZP** и **LKOH**, можно использовать после проверки их идентификаторов и параметров инструмента в целевом источнике данных. Реальная торговля в брокерском контуре Финама выполняется через [Finam Trade API](https://api.finam.ru/).
 
 <Note>
-  Quik strategies are often tightly coupled to specific order-routing behavior. Review the converted strategy's backtest results carefully, since execution assumptions differ between platforms.
+  Стратегии для QUIK часто зависят от конкретной логики маршрутизации и обработки заявок. Внимательно проверьте результат бэктеста после переноса: предположения об исполнении на двух платформах могут различаться.
 </Note>

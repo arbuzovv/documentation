@@ -1,20 +1,25 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "ZIPLIME",
+  "name": "Ziplime от Финама",
+  "description": "Документация российской платформы Ziplime от Финама для разработки, тестирования и запуска алгоритмических торговых стратегий.",
   "colors": {
-    "primary": "#CEFC31",
-    "light": "#CEFC31",
-    "dark": "#A6D91C"
+    "primary": "#C52025",
+    "light": "#FFDE41",
+    "dark": "#88181C"
   },
-  "favicon": "/favicon.png",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "ZipLime Guide",
+        "tab": "Руководство Ziplime",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Начало работы",
             "pages": [
               "guide/getting-started/overview",
               "guide/getting-started/how-it-works",
@@ -22,7 +27,7 @@
             ]
           },
           {
-            "group": "Platform",
+            "group": "Платформа",
             "pages": [
               "guide/platform/ai-agent-team",
               "guide/platform/three-levels",
@@ -31,7 +36,7 @@
             ]
           },
           {
-            "group": "Product",
+            "group": "Продукт",
             "pages": [
               "guide/product/two-environments",
               "guide/product/engine-and-technology",
@@ -40,13 +45,14 @@
             ]
           },
           {
-            "group": "Plans & Events",
+            "group": "Тарифы и события",
             "pages": [
-              "guide/plans/pricing-and-registration"
+              "guide/plans/pricing-and-registration",
+              "guide/plans/championships-and-events"
             ]
           },
           {
-            "group": "Resources",
+            "group": "Справка",
             "pages": [
               "guide/resources/faq",
               "guide/resources/glossary"
@@ -55,17 +61,17 @@
         ]
       },
       {
-        "tab": "Backtesting Language",
+        "tab": "Язык стратегий",
         "groups": [
           {
-            "group": "Introduction",
+            "group": "Введение",
             "pages": [
               "language/introduction/engine-overview",
               "language/introduction/under-the-hood"
             ]
           },
           {
-            "group": "Writing Strategies",
+            "group": "Разработка стратегий",
             "pages": [
               "language/writing-strategies/three-levels",
               "language/writing-strategies/timeframes-and-history",
@@ -73,7 +79,7 @@
             ]
           },
           {
-            "group": "Strategy Language",
+            "group": "Справочник языка",
             "pages": [
               "language/strategy-language/overview",
               "language/strategy-language/algorithm-file",
@@ -87,7 +93,7 @@
             ]
           },
           {
-            "group": "Migrating to Ziplime",
+            "group": "Переход на Ziplime",
             "pages": [
               "language/migrating/from-metatrader",
               "language/migrating/from-quik",
@@ -97,50 +103,77 @@
             ]
           },
           {
-            "group": "Limitations",
+            "group": "Ограничения",
             "pages": [
               "language/limitations/not-for-hft"
             ]
           }
         ]
+      },
+      {
+        "tab": "Для разработчиков",
+        "groups": [
+          {
+            "group": "Локальный запуск",
+            "pages": [
+              "api-reference/introduction"
+            ]
+          }
+        ]
       }
     ],
-  "global": {
-      "anchors": [
-      ]
+    "global": {
+      "anchors": []
     }
   },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:varbuzov@limex.com"
+        "label": "Поддержка",
+        "href": "https://www.finam.ru/about/contacts/"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Platform",
-      "href": "https://ziplime.limex.com"
+      "label": "Финам Trade API",
+      "href": "https://api.finam.ru/"
     }
   },
   "footer": {
-    "socials": {
-      "x": "https://x.com/limex",
-      "github": "https://github.com/limex",
-      "linkedin": "https://linkedin.com/company/limex"
-    }
+    "links": [
+      {
+        "header": "Финам",
+        "items": [
+          {
+            "label": "Официальный сайт",
+            "href": "https://www.finam.ru/"
+          },
+          {
+            "label": "Trade API",
+            "href": "https://api.finam.ru/"
+          },
+          {
+            "label": "Контакты",
+            "href": "https://www.finam.ru/about/contacts/"
+          }
+        ]
+      }
+    ]
   },
   "background": {
     "decoration": "grid",
     "color": {
       "light": "#FFFFFF",
-      "dark": "#0A0A0A"
+      "dark": "#050606"
     }
   },
   "fonts": {
-    "family": "Archivo"
+    "family": "Inter"
   },
   "appearance": {
-    "default": "dark"
+    "default": "system"
+  },
+  "search": {
+    "prompt": "Поиск по документации"
   }
 }

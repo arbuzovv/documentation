@@ -1,106 +1,118 @@
 ---
-title: "Glossary"
-description: "Key terms used throughout the Ziplime docs"
+title: "Глоссарий"
+description: "Основные термины документации Ziplime от Финама"
 ---
 
 <AccordionGroup>
-  <Accordion title="Algorithmic trading">
-    Trading executed by a predefined algorithm (strategy) rather than manually.
+  <Accordion title="Алгоритмическая торговля">
+    Торговля по заранее заданному алгоритму — стратегии, которая формирует и отправляет заявки по формализованным правилам.
   </Accordion>
 
-  <Accordion title="Strategy">
-    A set of rules that drives trading decisions — when to buy and when to sell.
+  <Accordion title="Стратегия">
+    Набор однозначных правил: какие данные анализировать, когда открывать и закрывать позицию, каким объёмом торговать и как ограничивать риск.
   </Accordion>
 
-  <Accordion title="Backtest">
-    Testing a strategy against historical data to see how it would have performed in the past.
+  <Accordion title="Бэктест">
+    Проверка стратегии на исторических данных. Показывает результат при заданных допущениях, но не предсказывает будущую доходность.
   </Accordion>
 
-  <Accordion title="Portfolio, pairs, momentum strategy">
-    Common strategy types: managing a basket of instruments, trading a pair of assets against each other, or following market momentum. Ziplime supports any strategy type.
+  <Accordion title="Портфельная, парная и моментум-стратегия">
+    Распространённые подходы: управление набором инструментов, торговля относительным движением пары активов и следование рыночному импульсу. Применимость каждого подхода зависит от данных, ликвидности и возможностей движка.
   </Accordion>
 
-  <Accordion title="Benchmark">
-    A reference used to compare a strategy's return — for example, a market index.
+  <Accordion title="Бенчмарк">
+    Ориентир для сравнения результата стратегии — например, индекс Московской биржи или другой показатель, соответствующий рынку и составу портфеля.
   </Accordion>
 
-  <Accordion title="Look-ahead bias">
-    A backtesting error where a strategy uses data that didn't exist yet at the moment of the trade, making the result unreliable.
+  <Accordion title="Заглядывание в будущее">
+    Ошибка бэктеста, при которой стратегия использует данные, ещё не известные на момент сделки. Английский термин — look-ahead bias.
   </Accordion>
 
-  <Accordion title="Overfitting">
-    Tuning parameters so closely to past data that the result looks great historically but fails to generalize going forward.
+  <Accordion title="Переобучение">
+    Чрезмерная настройка параметров под историческую выборку. Такая стратегия может выглядеть убедительно в бэктесте, но плохо работать на новых данных.
   </Accordion>
 
-  <Accordion title="Slippage">
-    The difference between the expected and the actual execution price of a trade.
+  <Accordion title="Проскальзывание">
+    Разница между ожидаемой ценой сделки и фактической ценой исполнения. Зависит в том числе от ликвидности, спреда, размера заявки и скорости изменения рынка.
   </Accordion>
 
-  <Accordion title="Drawdown">
-    A decline in portfolio value from its peak; maximum drawdown is the deepest such decline.
+  <Accordion title="Просадка">
+    Снижение стоимости портфеля от предыдущего максимума. Максимальная просадка — самое глубокое такое снижение за выбранный период.
   </Accordion>
 
-  <Accordion title="Sharpe ratio, Calmar ratio, alpha, beta, profit factor">
-    Standard strategy-quality metrics that express risk-adjusted return and performance relative to the market.
+  <Accordion title="Коэффициент Шарпа, коэффициент Калмара, альфа, бета, профит-фактор">
+    Показатели для оценки доходности, риска и поведения стратегии относительно рынка. Ни один показатель не следует использовать изолированно.
   </Accordion>
 
-  <Accordion title="Versioning">
-    Stored history of changes to a strategy's code — what changed and when.
+  <Accordion title="Версионирование">
+    Сохранение истории изменений кода и параметров стратегии, позволяющее сопоставлять версии и воспроизводить расчёты.
   </Accordion>
 
   <Accordion title="Zipline">
-    An open-source backtesting engine, formerly the core of the Quantopian platform, and the foundation of Ziplime's engine.
+    Открытый событийный движок бэктестинга, ранее лежавший в основе Quantopian. Архитектура Ziplime использует и развивает подходы Zipline.
   </Accordion>
 
   <Accordion title="Quantopian">
-    A well-known (now defunct) algorithmic trading platform built on Zipline.
+    Закрытая ныне платформа алгоритмической торговли, на которой был разработан и применялся движок Zipline.
   </Accordion>
 
-  <Accordion title="MarketData.TA">
-    Ziplime's internal service that supplies market data to the platform.
+  <Accordion title="Ziplime от Финама">
+    Платформа для создания, тестирования и анализа алгоритмических торговых стратегий с помощью ИИ. В техническом контексте используется краткое название Ziplime.
   </Accordion>
 
-  <Accordion title="Global Auth">
-    A shared authentication system — users stay signed in across Limex products.
+  <Accordion title="Финам Trade API">
+    Официальный программный интерфейс Финама для получения доступных торговых данных и работы с брокерским счётом. Поддерживаемые методы, протоколы и порядок подключения описаны на [api.finam.ru](https://api.finam.ru/).
   </Accordion>
 
-  <Accordion title="Lime Trader (REST API)">
-    Lime Trading's programmatic REST API for order execution; also a standalone product for users who build their own trading systems. See [lime.co/rest-api-python-sdk](https://lime.co/rest-api-python-sdk/).
+  <Accordion title="Токен API">
+    Секрет, с помощью которого приложение получает разрешённый доступ к Trade API. Токен нельзя публиковать в коде, сообщениях или репозиториях; права следует ограничивать необходимым минимумом.
   </Accordion>
 
-  <Accordion title="Lime Direct">
-    A separate Lime Trading product offering direct market access via FIX for technical teams that need minimal latency. See [lime.co/lime-direct-api-and-fix-protocol](https://lime.co/lime-direct-api-and-fix-protocol/).
+  <Accordion title="Московская биржа">
+    Основная торговая площадка российского контура. Для стратегии важны календарь и режим торгов, валюта расчёта, размер лота, шаг цены и особенности конкретного инструмента.
   </Accordion>
 
-  <Accordion title="High-frequency trading (HFT)">
-    Trading where the outcome depends on fractions of a second.
+  <Accordion title="Российский контур">
+    Вариант Ziplime от Финама, ориентированный на сервисы Финама, российские торговые сценарии и прежде всего инструменты Московской биржи.
   </Accordion>
 
-  <Accordion title="Market making">
-    Posting both buy and sell quotes to earn the spread between them; requires speed and infrastructure.
+  <Accordion title="Высокочастотная торговля (HFT)">
+    Класс стратегий, результат которых критически зависит от сверхмалых задержек и специализированной инфраструктуры. Ziplime не предназначен для таких задач.
   </Accordion>
 
-  <Accordion title="Fundamental data">
-    Company financial metrics: statements, valuation multiples.
+  <Accordion title="Маркет-мейкинг">
+    Выставление заявок на покупку и продажу для поддержания ликвидности и работы со спредом. Требования зависят от рынка, договора с площадкой и инфраструктуры участника.
   </Accordion>
 
-  <Accordion title="Alternative data">
-    Non-traditional data sources that support trading decisions.
+  <Accordion title="Фундаментальные данные">
+    Финансовая отчётность и показатели эмитента: выручка, прибыль, долговая нагрузка, мультипликаторы и другие характеристики бизнеса.
   </Accordion>
 
-  <Accordion title="Freemium">
-    A model where basic access is free and advanced features are paid.
+  <Accordion title="Альтернативные данные">
+    Нетрадиционные источники, которые могут дополнять биржевые и фундаментальные данные. Их качество, законность использования и отсутствие утечки будущей информации нужно проверять отдельно.
   </Accordion>
 
-  <Accordion title="Serverless architecture">
-    A cloud model where resources scale automatically with load, with no servers to manage individually.
+  <Accordion title="Торговые издержки">
+    Комиссии брокера и биржи, спред, проскальзывание и иные расходы, влияющие на результат стратегии. Для расчёта используйте актуальные условия Финама и параметры выбранного рынка.
   </Accordion>
 
-  <Accordion title="MQL4 / MQL5, Lua, Pine Script">
-    The strategy languages used by MetaTrader, Quik, and TradingView respectively; Ziplime's AI converts them to Python.
+  <Accordion title="Рублёвый расчёт">
+    Представление стоимости позиций, результата и риска в рублях. Для инструментов в другой валюте дополнительно требуется корректный валютный курс и учёт валютного риска.
   </Accordion>
 
-  <Accordion title="QuantConnect / Lean">
-    An algorithmic trading platform and its open-source engine; strategies can be migrated to Ziplime.
+  <Accordion title="Облачная инфраструктура">
+    Среда, в которой Ziplime выполняет бэктесты и, при доступности функции, запущенные стратегии без постоянной работы компьютера пользователя.
+  </Accordion>
+
+  <Accordion title="MQL4, MQL5, Lua и Pine Script">
+    Языки, используемые соответственно в MetaTrader, QUIK и TradingView. ИИ Ziplime может помочь перенести торговую логику из них в Python, но результат требует проверки и адаптации к российскому рынку.
+  </Accordion>
+
+  <Accordion title="QuantConnect и Lean">
+    Платформа алгоритмической торговли и её открытый движок. Стратегию можно адаптировать к Ziplime, учитывая различия API, данных и модели исполнения.
+  </Accordion>
+
+  <Accordion title="Финам Арена">
+    Площадка Финама для соревнований и практических активностей в области алгоритмической торговли. Актуальные правила и события публикуются на [официальной странице](https://api.finam.ru/arena/).
   </Accordion>
 </AccordionGroup>

@@ -1,12 +1,14 @@
 ---
-title: "From TradingView"
-description: "Bringing Pine Script strategies to Ziplime"
+title: "Переход с TradingView"
+description: "Перенос стратегий на Pine Script в Ziplime от Финама"
 ---
 
-If you have indicators or strategies written in **Pine Script** for TradingView, Ziplime's AI can convert that logic into Python for its own engine.
+Если у вас есть индикатор или стратегия на **Pine Script** для TradingView, ИИ в **Ziplime от Финама** поможет перенести эту логику на Python для движка Ziplime/Zipline.
 
-Paste your Pine Script (or describe what it does) in the chat, and the agent team will rebuild it as a Python strategy, wire it up to Ziplime's data and cost model, and explain the translation. From there you can keep working at the [chat, code-block, or full-code level](/language/writing-strategies/three-levels).
+Вставьте Pine Script в чат или опишите его поведение. Команда агентов воссоздаст решение как стратегию на Python, подключит данные и модель расходов, а затем объяснит изменения. Дальше можно работать через [чат, готовые блоки или полный код](/language/writing-strategies/three-levels).
+
+При переходе на российский рынок проверьте соответствие символов тикерам Мосбиржи, торговую сессию и денежные расчёты в рублях. Для реального исполнения заявок используйте [Finam Trade API](https://api.finam.ru/).
 
 <Note>
-  Pine Script indicators aren't always strategies with order logic attached. If you're converting a pure indicator, expect to define entry/exit rules explicitly as part of the migration.
+  Индикатор на Pine Script не всегда содержит торговую логику. При переносе чистого индикатора потребуется отдельно определить правила входа и выхода из позиции.
 </Note>

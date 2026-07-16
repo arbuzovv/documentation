@@ -1,87 +1,41 @@
 ---
-title: 'Navigation'
-description: 'The navigation field in docs.json defines the pages that go in the navigation menu'
-icon: 'map'
+title: "Навигация документации"
+description: "Как страницы подключаются к меню Mintlify"
+icon: "map"
 ---
 
-The navigation menu is the list of links on every website.
+Навигация сайта задаётся в файле docs.json. Страница не появляется в боковом меню автоматически: её путь нужно добавить в подходящую группу.
 
-You will likely update `docs.json` every time you add a new page. Pages do not show up automatically.
+## Пример
 
-## Navigation syntax
-
-Our navigation syntax is recursive which means you can make nested navigation groups. You don't need to include `.mdx` in page names.
-
-<CodeGroup>
-
-```json Regular Navigation
-"navigation": {
-  "tabs": [
-    {
-      "tab": "Docs",
-      "groups": [
-        {
-          "group": "Getting Started",
-          "pages": ["quickstart"]
-        }
-      ]
-    }
-  ]
+~~~json
+{
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Руководство",
+        "groups": [
+          {
+            "group": "Начало работы",
+            "pages": ["guide/getting-started/overview"]
+          }
+        ]
+      }
+    ]
+  }
 }
-```
+~~~
 
-```json Nested Navigation
-"navigation": {
-  "tabs": [
-    {
-      "tab": "Docs",
-      "groups": [
-        {
-          "group": "Getting Started",
-          "pages": [
-            "quickstart",
-            {
-              "group": "Nested Reference Pages",
-              "pages": ["nested-reference-page"]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
+Расширение .mdx в пути не указывается.
 
-</CodeGroup>
+## Папки
 
-## Folders
+Путь guide/getting-started/overview соответствует файлу guide/getting-started/overview.mdx. Не используйте api как имя папки верхнего уровня: оно зарезервировано внутренними маршрутами Next.js. Для API-материалов подходит api-reference.
 
-Simply put your MDX files in folders and update the paths in `docs.json`.
+## Скрытые страницы
 
-For example, to have a page at `https://yoursite.com/your-folder/your-page` you would make a folder called `your-folder` containing an MDX file called `your-page.mdx`.
+MDX-файлы, которых нет в docs.json, не отображаются в боковом меню, но могут открываться по прямой ссылке и попадать в поиск.
 
 <Warning>
-
-You cannot use `api` for the name of a folder unless you nest it inside another folder. Mintlify uses Next.js which reserves the top-level `api` folder for internal server calls. A folder name such as `api-reference` would be accepted.
-
+  После изменения навигации выполните mint validate и mint broken-links.
 </Warning>
-
-```json Navigation With Folder
-"navigation": {
-  "tabs": [
-    {
-      "tab": "Docs",
-      "groups": [
-        {
-          "group": "Group Name",
-          "pages": ["your-folder/your-page"]
-        }
-      ]
-    }
-  ]
-}
-```
-
-## Hidden Pages
-
-MDX files not included in `docs.json` will not show up in the sidebar but are accessible through the search bar and by linking directly to them.

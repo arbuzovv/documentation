@@ -1,12 +1,14 @@
 ---
-title: "From QuantConnect & Lean"
-description: "Bringing Lean strategies to Ziplime"
+title: "Переход с QuantConnect и Lean"
+description: "Перенос стратегий Lean в Ziplime от Финама"
 ---
 
-If you have strategies built on **QuantConnect**, running on the open-source **Lean** engine, Ziplime's AI can help port that logic to its own Python/Zipline-based engine.
+Если стратегия создана в **QuantConnect** и работает на открытом движке **Lean**, ИИ в **Ziplime от Финама** поможет перенести её логику на движок на базе Python и Zipline.
 
-Because both Lean and Ziplime use Python, migration is often more direct than from a non-Python platform — but the underlying APIs differ (data access, order placement, scheduling), so the agent team will still rewrite strategy internals against Ziplime's API rather than doing a literal copy-paste.
+Lean и Ziplime от Финама поддерживают Python, поэтому такой переход обычно проще, чем миграция с платформы на другом языке. При этом API различаются: потребуется адаптировать получение данных, размещение заявок и расписание событий под API Ziplime/Zipline, а не просто скопировать исходный код.
+
+Для российского контура замените исходные инструменты на нужные тикеры Мосбиржи, проверьте расчёты в рублях и заново настройте торговый календарь. Реальные заявки отправляются через [Finam Trade API](https://api.finam.ru/).
 
 <Note>
-  Compare backtest results before and after migration. Even with similar Python roots, differences in data handling and fill assumptions between Lean and Zipline can shift results.
+  Сравните результаты бэктестов до и после миграции. Даже при использовании Python различия в обработке данных и предположениях об исполнении между Lean и Zipline могут заметно повлиять на результат.
 </Note>

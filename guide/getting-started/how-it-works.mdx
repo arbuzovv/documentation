@@ -1,30 +1,34 @@
 ---
-title: "How It Works"
-description: "The user journey from idea to live trading"
+title: "Как это работает"
+description: "Путь от торговой идеи до тестирования и запуска стратегии"
 ---
 
-Working with Ziplime follows a simple, repeatable sequence.
+Работа с Ziplime от Финама строится как понятный повторяемый процесс.
 
 <Steps>
-  <Step title="Sign in">
-    Authentication uses **Global Auth**. Once you're signed in to Limex, you stay signed in — no need to log in again.
+  <Step title="Войдите в систему">
+    Авторизуйтесь в российском контуре Финама. Для подключения реальной торговли дополнительно понадобятся брокерский счёт Финама и доступ к Финам Trade API.
   </Step>
-  <Step title="Describe your idea">
-    Formulate a trading strategy in plain language. You can optionally choose which AI model you want to work with.
+  <Step title="Опишите идею">
+    Сформулируйте торговую стратегию обычным языком: укажите рынок, инструменты, условия входа и выхода, горизонт и допустимый риск. Если интерфейс предлагает выбор модели ИИ, можно выбрать подходящую.
   </Step>
-  <Step title="Strategy generation">
-    The built-in AI writes the strategy code, fixes errors when they occur, and optimizes the result.
+  <Step title="Получите стратегию">
+    Встроенный ИИ формирует код стратегии, помогает исправить ошибки и предлагает варианты доработки. Пользователь может проверить и изменить код до запуска расчёта.
   </Step>
-  <Step title="Backtesting">
-    The code runs in the cloud against the platform's internal historical data — this is called a backtest.
+  <Step title="Проведите бэктест">
+    Код выполняется на доступных исторических данных. Для российского сценария обычно используют инструменты Московской биржи и цены в рублях. Состав данных и глубина истории зависят от выбранного набора данных.
   </Step>
-  <Step title="Results">
-    Outcomes are presented as charts, tables, and reports with detailed performance metrics.
+  <Step title="Изучите результат">
+    Результаты представлены графиками, таблицами и показателями стратегии. Учитывайте комиссии, проскальзывание и другие допущения расчёта.
   </Step>
-  <Step title="History and comparison">
-    Every backtest run is saved. You can return to an earlier result and compare it with the current one.
+  <Step title="Сравните версии">
+    Если сохранение истории доступно в вашей версии продукта, можно вернуться к предыдущим запускам и сопоставить их с текущим результатом.
   </Step>
-  <Step title="Go live">
-    Launch a finished strategy on a real account — connecting your broker takes a single click. See [Real Trading](/guide/platform/real-trading) for details.
+  <Step title="Подготовьте запуск">
+    Перед реальной торговлей проверьте риск-параметры, торговый календарь и права доступа к счёту. Заявки передаются через [Финам Trade API](https://api.finam.ru/). Подробности — в разделе [«Реальная торговля»](/guide/platform/real-trading).
   </Step>
 </Steps>
+
+<Warning>
+  Результаты на исторических данных не гарантируют доходность в будущем. Перед запуском на реальном счёте протестируйте стратегию в безопасном режиме и убедитесь, что понимаете её риски.
+</Warning>

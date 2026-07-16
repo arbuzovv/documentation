@@ -1,9 +1,9 @@
 ---
-title: "Orders"
-description: "Placing, targeting, and cancelling orders from context"
+title: "Заявки"
+description: "Размещение, приведение к целевому значению и отмена заявок через context"
 ---
 
-Orders are async calls on `context`. Place them in `handle_data` or in scheduled callbacks. Do not place orders in `initialize` or `before_trading_start`.
+Заявки размещаются асинхронными вызовами методов `context`. Вызывайте их в `handle_data` или в запланированных функциях обратного вызова. Не размещайте заявки в `initialize` и `before_trading_start`.
 
 ```python
 from ziplime.finance.execution import MarketOrder
@@ -15,9 +15,9 @@ await context.order_target_percent(
 )
 ```
 
-## Execution styles
+## Стили исполнения
 
-Import execution styles from `ziplime.finance.execution`.
+Импортируйте стили исполнения из `ziplime.finance.execution`.
 
 ```python
 from ziplime.finance.execution import (
@@ -28,90 +28,93 @@ from ziplime.finance.execution import (
 )
 ```
 
-| Style | Example | Meaning |
+| Стиль | Пример | Значение |
 | --- | --- | --- |
-| `MarketOrder()` | `MarketOrder()` | Fill using the configured simulation execution price and slippage model. |
-| `LimitOrder(limit_price)` | `LimitOrder(150.0)` | Buy no higher than the limit, sell no lower than the limit. |
-| `StopOrder(stop_price)` | `StopOrder(145.0)` | Trigger a market order after the stop threshold is reached. |
-| `StopLimitOrder(limit_price, stop_price)` | `StopLimitOrder(151.0, 149.0)` | Trigger a limit order after the stop threshold is reached. |
+| `MarketOrder()` | `MarketOrder()` | Исполнить по цене, заданной настройками симуляции и моделью проскальзывания. |
+| `LimitOrder(limit_price)` | `LimitOrder(300.0)` | Купить не выше лимитной цены или продать не ниже неё. |
+| `StopOrder(stop_price)` | `StopOrder(290.0)` | Активировать рыночную заявку после достижения стоп-цены. |
+| `StopLimitOrder(limit_price, stop_price)` | `StopLimitOrder(302.0, 295.0)` | Активировать лимитную заявку после достижения стоп-цены. |
 
-## Fixed quantity
+Для рублёвых инструментов MOEX цены в этих примерах выражены в рублях; в общем случае используется валюта котировки инструмента.
+
+## Фиксированное количество
 
 ### `await context.order(asset, amount, style, exchange_name=None)`
 
-Positive `amount` buys or covers. Negative `amount` sells or shorts.
+Положительное значение `amount` открывает или увеличивает длинную позицию либо закрывает короткую. Отрицательное значение продаёт инструмент или открывает короткую позицию.
 
 ```python
 await context.order(context.asset, 100, style=MarketOrder())
 await context.order(context.asset, -50, style=MarketOrder())
 ```
 
-Limit order:
+Лимитная заявка:
 
 ```python
 await context.order(
     context.asset,
     100,
-    style=LimitOrder(limit_price=150.0),
+    style=LimitOrder(limit_price=300.0),
 )
 ```
 
-## Target quantity
+## Целевое количество
 
 ### `await context.order_target(asset, target, style, exchange_name=None)`
 
-Adjust your position to a target number of shares or contracts.
+Изменяет позицию до целевого количества акций или контрактов.
 
 ```python
 await context.order_target(context.asset, 200, style=MarketOrder())
 await context.order_target(context.asset, 0, style=MarketOrder())
 ```
 
-## Portfolio percent
+## Доля портфеля
 
 ### `await context.order_target_percent(asset, target, style, exchange_name=None, reserved_percentage_for_fees=0.05)`
 
-Adjust your position to a target portfolio weight. `target` must be between `-1` and `1`.
+Изменяет позицию до целевого веса в портфеле. Значение `target` должно находиться в диапазоне от `-1` до `1`.
 
 ```python
-# Allocate 25% of the portfolio to AAPL.
-await context.order_target_percent(context.aapl, 0.25, style=MarketOrder())
+# Выделить 25% портфеля на SBER.
+await context.order_target_percent(context.sber, 0.25, style=MarketOrder())
 
-# Close the position.
-await context.order_target_percent(context.aapl, 0.0, style=MarketOrder())
+# Закрыть позицию.
+await context.order_target_percent(context.sber, 0.0, style=MarketOrder())
 ```
 
-This is the most common helper for rebalancing strategies.
+Это основной вспомогательный метод для стратегий с ребалансировкой.
 
 ### `await context.order_percent(asset, percent, style, exchange_name=None)`
 
-Order an incremental percent of current portfolio value. This is not a target. It adds or removes exposure relative to the current position.
+Изменяет позицию на долю текущей стоимости портфеля. Это не целевое значение: метод добавляет или сокращает экспозицию относительно текущей позиции.
 
 ```python
-# Buy approximately 10% of current portfolio value.
+# Купить примерно на 10% текущей стоимости портфеля.
 await context.order_percent(context.asset, 0.10, style=MarketOrder())
 ```
 
-## Dollar value
+## Денежная стоимость
 
 ### `await context.order_target_value(asset, target, style, exchange_name=None)`
 
-Adjust your position to a target notional value.
+Изменяет позицию до целевой номинальной стоимости в валюте портфеля.
 
 ```python
-await context.order_target_value(context.asset, 10_000, style=MarketOrder())
+# Для портфеля в RUB целевая стоимость позиции составляет 1 000 000 рублей.
+await context.order_target_value(context.asset, 1_000_000, style=MarketOrder())
 await context.order_target_value(context.asset, 0, style=MarketOrder())
 ```
 
 ### `context.order_value(...)`
 
-`order_value` is present as a Zipline-style compatibility method for incremental dollar orders. In current Ziplime strategy code, prefer `order_target_value`, `order_percent`, or `order` unless you have verified that your runtime path supports the exact `order_value` behavior you need.
+`order_value` присутствует как совместимый с Zipline метод для заявок на приращение денежной стоимости. В текущем коде стратегий Ziplime предпочтительнее использовать `order_target_value`, `order_percent` или `order`, если вы отдельно не проверили, что ваш путь исполнения поддерживает нужное поведение `order_value`.
 
-## Open orders
+## Открытые заявки
 
 ### `context.get_open_orders(asset=None)`
 
-Return currently open orders. Pass an asset to filter by asset.
+Возвращает открытые на текущий момент заявки. Передайте инструмент, чтобы отфильтровать результат.
 
 ```python
 open_orders = context.get_open_orders(context.asset)
@@ -121,64 +124,66 @@ if open_orders:
 
 ### `context.get_order(order_id, exchange_name)`
 
-Retrieve an order by id.
+Возвращает заявку по идентификатору.
 
 ```python
-order = context.get_order(order_id, exchange_name="LIME")
+order = context.get_order(order_id, exchange_name="MOEX")
 if order is not None:
     print(order.status, order.filled, order.amount)
 ```
 
+Имя `"MOEX"` должно совпадать со значением `exchange_name` в конфигурации запуска.
+
 ### `await context.cancel_order(order_id, exchange_name, relay_status=True)`
 
-Cancel an open order.
+Отменяет открытую заявку.
 
 ```python
 for order in context.get_open_orders(context.asset):
     await context.cancel_order(order.id, exchange_name=order.exchange_name)
 ```
 
-## Returned order object
+## Возвращаемый объект заявки
 
-Order methods return an `Order` object or `None` if no order was placed.
+Методы работы с заявками возвращают объект `Order` или `None`, если заявка не была размещена.
 
-Useful fields:
+Полезные поля:
 
-| Field | Meaning |
+| Поле | Значение |
 | --- | --- |
-| `id` | Ziplime order id |
-| `asset` | Ordered asset |
-| `amount` | Requested amount |
-| `filled` | Filled amount |
-| `open_amount` | Remaining amount |
-| `status` | Current order status |
-| `commission` | Accumulated commission |
-| `dt` | Last order update datetime |
-| `exchange_name` | Exchange that owns the order |
+| `id` | Идентификатор заявки в Ziplime |
+| `asset` | Инструмент заявки |
+| `amount` | Запрошенное количество |
+| `filled` | Исполненное количество |
+| `open_amount` | Оставшееся количество |
+| `status` | Текущий статус заявки |
+| `commission` | Накопленная комиссия |
+| `dt` | Дата и время последнего обновления заявки |
+| `exchange_name` | Биржа, которой принадлежит заявка |
 
-## Fill timing
+## Момент исполнения
 
-`run_simulation(..., same_bar_execution=True)` means orders submitted during `handle_data` can be filled in the same bar. With `same_bar_execution=False`, orders submitted in `handle_data` are filled on a later bar.
+При `run_simulation(..., same_bar_execution=True)` заявки, отправленные в `handle_data`, могут исполниться на том же баре. При `same_bar_execution=False` они исполняются на одном из следующих баров.
 
-Execution price is controlled by `price_used_in_order_execution`, one of `"open"`, `"close"`, `"low"`, or `"high"`, and by the configured slippage model.
+Цена исполнения определяется параметром `price_used_in_order_execution` со значением `"open"`, `"close"`, `"low"` или `"high"`, а также настроенной моделью проскальзывания.
 
-## Target-order warning
+## Предупреждение о целевых заявках
 
-Target helpers do not automatically account for open orders that have not filled yet. This pattern can over-order:
+Целевые методы не учитывают автоматически открытые заявки, которые ещё не исполнились. Следующий код может создать избыточный объём заявок:
 
 ```python
 await context.order_target_percent(asset, 0.5, style=MarketOrder())
 await context.order_target_percent(asset, 0.5, style=MarketOrder())
 ```
 
-Safer pattern:
+Более безопасный вариант:
 
 ```python
 if not context.get_open_orders(asset):
     await context.order_target_percent(asset, 0.5, style=MarketOrder())
 ```
 
-## Equal-weight rebalance
+## Ребалансировка с равными весами
 
 ```python
 from ziplime.finance.execution import MarketOrder

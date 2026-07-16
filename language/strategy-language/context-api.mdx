@@ -1,70 +1,70 @@
 ---
-title: "Context API"
-description: "Look up assets, trade, schedule work, and inspect state through context"
+title: "API объекта context"
+description: "Поиск инструментов, торговля, расписание и проверка состояния через context"
 ---
 
-`context` is the persistent algorithm object passed into lifecycle functions. Store your strategy state on it and call its methods to look up assets, trade, schedule work, inspect portfolio state, and configure controls.
+`context` — постоянный объект алгоритма, который передаётся в функции жизненного цикла. Храните в нём состояние стратегии и вызывайте его методы, чтобы находить инструменты, торговать, планировать задачи, проверять состояние портфеля и настраивать ограничения.
 
-## Direct context style
+## Прямые вызовы через context
 
-Prefer direct method calls on `context`:
+Предпочтительно вызывать методы непосредственно у `context`:
 
 ```python
 from ziplime.finance.execution import MarketOrder
 
-asset = await context.symbol("AAPL")
+asset = await context.symbol("SBER")
 await context.order_target_percent(asset, 0.25, style=MarketOrder())
 ```
 
-Ziplime also exposes Zipline-style functions through `ziplime.api`, but `context` calls are clearer inside async algorithm code.
+Ziplime также предоставляет функции в стиле Zipline через `ziplime.api`, но в асинхронном коде алгоритма прямые вызовы `context` читаются яснее.
 
-## Asset lookup
+## Поиск инструментов
 
 ### `await context.symbol(symbol, mic=None, asset_type=AssetType.EQUITY)`
 
-Look up an exchange-listed asset by ticker.
+Находит биржевой инструмент по тикеру.
 
 ```python
-context.aapl = await context.symbol("AAPL")
-context.nflx = await context.symbol("NFLX@XNGS")
-context.msft = await context.symbol("MSFT", mic="XNGS")
+context.sber = await context.symbol("SBER")
+context.gazp = await context.symbol("GAZP@MISX")
+context.lkoh = await context.symbol("LKOH", mic="MISX")
 ```
 
-If the symbol string contains `@`, the part after `@` is interpreted as the MIC exchange code.
+Если строка символа содержит `@`, часть после `@` интерпретируется как MIC-код биржи.
 
-### Multiple symbols
+### Несколько символов
 
-Recommended pattern:
+Рекомендуемый вариант:
 
 ```python
-SYMBOLS = ["AAPL", "MSFT", "NVDA"]
+SYMBOLS = ["SBER", "GAZP", "LKOH"]
 
 
 async def initialize(context):
     context.assets = [await context.symbol(symbol) for symbol in SYMBOLS]
 ```
 
-`context.symbols(*symbols)` exists for compatibility, but in the current implementation it returns a list of awaitables. If you use it, gather or await each item:
+Метод `context.symbols(*symbols)` сохранён для совместимости, но в текущей реализации возвращает список awaitable-объектов. Если вы его используете, соберите результаты через `gather` или дождитесь каждого объекта отдельно:
 
 ```python
 import asyncio
 
-context.assets = await asyncio.gather(*context.symbols("AAPL", "MSFT", "NVDA"))
+context.assets = await asyncio.gather(*context.symbols("SBER", "GAZP", "LKOH"))
 ```
 
 ### `await context.symbols_universe(name, dt=None)`
 
-Load a named symbol universe from the asset service.
+Загружает именованный набор символов из сервиса инструментов.
 
 ```python
-context.q100us = await context.symbols_universe(name="Q100US")
+context.moex_liquid = await context.symbols_universe(name="MOEX_LIQUID")
 ```
 
-If `dt` is omitted, Ziplime uses the current simulation datetime.
+Имя набора должно быть зарегистрировано в сервисе инструментов. Если `dt` не указан, Ziplime использует текущие дату и время симуляции.
 
 ### `await context.sid(sid)`
 
-Look up an asset by numeric SID.
+Находит инструмент по числовому SID.
 
 ```python
 asset = await context.sid(12345)
@@ -72,27 +72,29 @@ asset = await context.sid(12345)
 
 ### `await context.future_symbol(symbol, exchange_name=None)`
 
-Look up a futures contract.
+Находит фьючерсный контракт.
 
 ```python
-contract = await context.future_symbol("ESM25", exchange_name="XCME")
+contract = await context.future_symbol("SiM5", exchange_name="MOEX")
 ```
 
-## Time and configuration
+Значение `exchange_name` должно совпадать с именем биржи в конфигурации запуска.
+
+## Время и конфигурация
 
 ### `context.get_datetime()`
 
-Return the current simulation datetime.
+Возвращает текущие дату и время симуляции.
 
 ```python
 now = context.get_datetime()
 ```
 
-`context.simulation_dt` holds the same current simulation timestamp.
+`context.simulation_dt` содержит ту же текущую временную метку симуляции.
 
 ### `context.algorithm.config`
 
-Access a typed algorithm config loaded from JSON.
+Предоставляет доступ к типизированной конфигурации алгоритма, загруженной из JSON.
 
 ```python
 async def initialize(context):
@@ -100,42 +102,44 @@ async def initialize(context):
     context.max_weight = cfg.max_weight
 ```
 
-See [Algorithm file](/language/strategy-language/algorithm-file#algorithm-configuration) for the config class pattern.
+Шаблон класса конфигурации описан в разделе [«Файл алгоритма»](/language/strategy-language/algorithm-file#конфигурация-алгоритма).
 
-## Available methods
+## Доступные методы
 
-| Method | Await? | Main use |
+| Метод | Нужен `await`? | Основное назначение |
 | --- | --- | --- |
-| `symbol(symbol, mic=None, asset_type=...)` | Yes | Look up an equity or exchange asset. |
-| `symbols(*symbols, **kwargs)` | See note | Compatibility helper; prefer list comprehensions. |
-| `symbols_universe(name, dt=None)` | Yes | Load a named universe. |
-| `sid(sid)` | Yes | Look up by numeric asset id. |
-| `future_symbol(symbol, exchange_name=None)` | Yes | Look up a futures contract. |
-| `get_datetime()` | No | Current simulation datetime. |
-| `record(**kwargs)` | No | Add custom columns to performance output. |
-| `schedule_function(func, date_rule=None, time_rule=None, ...)` | No | Register a callback. |
-| `order(asset, amount, style, exchange_name=None)` | Yes | Buy or sell a fixed quantity. |
-| `order_percent(asset, percent, style, exchange_name=None)` | Yes | Trade an incremental percent of portfolio value. |
-| `order_target(asset, target, style, exchange_name=None)` | Yes | Target a share/contract quantity. |
-| `order_target_value(asset, target, style, exchange_name=None)` | Yes | Target a dollar exposure. |
-| `order_target_percent(asset, target, style, exchange_name=None)` | Yes | Target a portfolio weight. |
-| `get_open_orders(asset=None)` | No | Inspect open orders. |
-| `get_order(order_id, exchange_name)` | No | Retrieve a specific order. |
-| `cancel_order(order_id, exchange_name, relay_status=True)` | Yes | Cancel an open order. |
-| `set_long_only()` | No | Disallow short positions. |
-| `set_max_leverage(max_leverage)` | No | Cap account leverage. |
-| `set_max_position_size(...)` | No | Cap position size. |
-| `set_max_order_size(...)` | No | Cap single-order size. |
-| `set_max_order_count(max_count)` | No | Cap order count per day. |
-| `attach_pipeline(pipeline, name, ...)` | No | Register a pipeline during initialization. |
-| `pipeline_output(name)` | No | Read attached pipeline results after initialization. |
+| `symbol(symbol, mic=None, asset_type=...)` | Да | Найти акцию или другой биржевой инструмент. |
+| `symbols(*symbols, **kwargs)` | См. примечание | Вспомогательный метод совместимости; предпочтительнее списковое включение. |
+| `symbols_universe(name, dt=None)` | Да | Загрузить именованный набор инструментов. |
+| `sid(sid)` | Да | Найти инструмент по числовому идентификатору. |
+| `future_symbol(symbol, exchange_name=None)` | Да | Найти фьючерсный контракт. |
+| `get_datetime()` | Нет | Получить текущие дату и время симуляции. |
+| `record(**kwargs)` | Нет | Добавить пользовательские столбцы в итоговую таблицу. |
+| `schedule_function(func, date_rule=None, time_rule=None, ...)` | Нет | Зарегистрировать функцию обратного вызова. |
+| `order(asset, amount, style, exchange_name=None)` | Да | Купить или продать фиксированное количество. |
+| `order_percent(asset, percent, style, exchange_name=None)` | Да | Изменить позицию на долю текущей стоимости портфеля. |
+| `order_target(asset, target, style, exchange_name=None)` | Да | Привести позицию к целевому числу акций или контрактов. |
+| `order_target_value(asset, target, style, exchange_name=None)` | Да | Привести позицию к целевой денежной экспозиции в валюте портфеля. |
+| `order_target_percent(asset, target, style, exchange_name=None)` | Да | Привести позицию к целевому весу в портфеле. |
+| `get_open_orders(asset=None)` | Нет | Получить открытые заявки. |
+| `get_order(order_id, exchange_name)` | Нет | Получить конкретную заявку. |
+| `cancel_order(order_id, exchange_name, relay_status=True)` | Да | Отменить открытую заявку. |
+| `set_long_only()` | Нет | Запретить короткие позиции. |
+| `set_max_leverage(max_leverage)` | Нет | Ограничить плечо счёта. |
+| `set_max_position_size(...)` | Нет | Ограничить размер позиции. |
+| `set_max_order_size(...)` | Нет | Ограничить размер одной заявки. |
+| `set_max_order_count(max_count)` | Нет | Ограничить число заявок за день. |
+| `attach_pipeline(pipeline, name, ...)` | Нет | Зарегистрировать пайплайн во время инициализации. |
+| `pipeline_output(name)` | Нет | Получить результаты подключённого пайплайна после инициализации. |
 
-## Exchange names
+## Имена бирж
 
-Most order methods accept an optional `exchange_name`. If omitted, Ziplime uses the default exchange configured by the simulation runner. The examples in this repository commonly use `"LIME"` as the simulation exchange name.
+Большинство методов работы с заявками принимает необязательный параметр `exchange_name`. Если он не указан, Ziplime использует биржу по умолчанию из конфигурации запуска симуляции. В примерах для российского контура используется имя `"MOEX"`.
 
-Use explicit exchange names when:
+Указывайте имя биржи явно, если:
 
-- You run multiple exchanges.
-- You inspect or cancel an order with `get_order` or `cancel_order`.
-- You query portfolio helper methods by exchange.
+- В запуске используется несколько бирж.
+- Вы получаете или отменяете заявку через `get_order` или `cancel_order`.
+- Вызываете методы портфеля с фильтрацией по бирже.
+
+Строка `exchange_name` — это имя из конфигурации запуска, а не обязательно MIC-код. Если в вашей конфигурации задано другое имя, используйте его вместо `"MOEX"`.

@@ -1,12 +1,14 @@
 ---
-title: "From MetaTrader"
-description: "Bringing MQL4 / MQL5 strategies to Ziplime"
+title: "Переход с MetaTrader"
+description: "Перенос стратегий на MQL4 и MQL5 в Ziplime от Финама"
 ---
 
-If you have strategies written in **MQL4** or **MQL5** for MetaTrader, Ziplime's AI can convert that code into Python for its own engine.
+Если у вас есть стратегия на **MQL4** или **MQL5** для MetaTrader, ИИ в **Ziplime от Финама** поможет перенести её на Python для движка Ziplime/Zipline.
 
-Describe your existing strategy (or paste the MQL code) in the chat, and the [Strategy Developer agent](/guide/platform/ai-agent-team) will translate the logic into Python, wire it up to Ziplime's data, and explain what changed along the way. From there, you can keep working at the [chat, code-block, or full-code level](/language/writing-strategies/three-levels) — whichever suits you.
+Опишите существующую стратегию или вставьте MQL-код в чат. [Агент разработки стратегий](/guide/platform/ai-agent-team) перенесёт логику на Python, подключит данные и объяснит внесённые изменения. После этого продолжайте работу через [чат, готовые блоки или полный код](/language/writing-strategies/three-levels).
+
+При переносе на российский рынок сопоставьте исходные символы с тикерами Мосбиржи, например **SBER**, **GAZP** или **LKOH**, и учитывайте расчёты в рублях. Для реальной торговли подключите стратегию к [Finam Trade API](https://api.finam.ru/).
 
 <Note>
-  Conversion carries over the strategy's _logic_. Because Ziplime models costs, fills, and timing differently from MetaTrader's tester, review backtest results after migration rather than assuming they'll match 1:1.
+  Переносится _логика_ стратегии. Модели расходов, исполнения и времени в Ziplime от Финама и тестере MetaTrader различаются, поэтому результаты после миграции нужно проверить заново — они не обязаны совпадать один к одному.
 </Note>

@@ -1,20 +1,20 @@
 ---
-title: "Under the Hood"
-description: "Performance and versioning inside the engine"
+title: "Под капотом"
+description: "Производительность и версионирование движка Ziplime от Финама"
 ---
 
-## Performance
+## Производительность
 
-Calculations are accelerated using the **Polars** dataframe library, with select performance-critical components implemented in **Rust**. This keeps backtests fast even over long history windows and fine-grained (minute-level) data.
+Для ускорения расчётов используется библиотека датафреймов **Polars**, а отдельные критичные к производительности компоненты реализованы на **Rust**. Это помогает эффективно выполнять бэктесты на длинных периодах и минутных данных.
 
-## Parameters and versioning
+## Параметры и версии
 
-Strategy parameters can be defined separately from the strategy's logic, so they can be tuned — for optimization, for example — without touching the underlying code. Every change to a strategy's code is kept in version history, so a strategy is a project that evolves over time rather than a single frozen result.
+Параметры стратегии можно отделить от её логики. Например, значения для оптимизации меняются без правок основного кода. Изменения кода сохраняются в истории версий, поэтому стратегию можно развивать как проект, а не хранить только один зафиксированный результат.
 
-## No restriction on strategy type
+## Разные типы стратегий
 
-The engine doesn't constrain the kind of strategy you build. Portfolio strategies, pairs trading, momentum, or anything else — all run on the same underlying engine.
+Один движок поддерживает разные подходы: портфельные стратегии, парный трейдинг, моментум, возврат к среднему и другие методы. Их можно применять и к инструментам Мосбиржи, включая **SBER**, **GAZP** и **LKOH**.
 
 <Note>
-  This page describes the engine's architecture at a conceptual level. For hands-on strategy examples and code, see [Writing Strategies](/language/writing-strategies/three-levels).
+  Здесь архитектура движка описана на концептуальном уровне. Практические примеры и варианты работы с кодом приведены в разделе [«Три уровня разработки стратегии»](/language/writing-strategies/three-levels).
 </Note>

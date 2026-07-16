@@ -1,20 +1,20 @@
 ---
-title: "Three Levels of Strategy Development"
-description: "Chat, code blocks, or full Python"
+title: "Три уровня разработки стратегии"
+description: "Чат, готовые блоки или полный код на Python"
 ---
 
-You don't have to start by writing code. Ziplime supports three ways to build a strategy, and you can move between them freely.
+Чтобы начать работу, необязательно сразу писать код. **Ziplime от Финама** поддерживает три способа создания стратегии, между которыми можно свободно переключаться.
 
 <Tabs>
-  <Tab title="Chat">
-    Describe your idea in plain language, and the [AI agent team](/guide/platform/ai-agent-team) writes the Python code for you — including data wiring, error fixes, and optimization suggestions. No programming knowledge required.
+  <Tab title="Чат">
+    Опишите идею обычным языком, и [команда ИИ-агентов](/guide/platform/ai-agent-team) подготовит код на Python: подключит данные, исправит ошибки и предложит варианты оптимизации. Знание программирования не требуется.
   </Tab>
-  <Tab title="Code blocks">
-    Insert ready-made blocks directly into the generated code (indicators, data sources, order logic), and the surrounding code is rewritten to incorporate them. This gives access to functionality that's hard to reach through chat alone, without requiring you to write Python from scratch.
+  <Tab title="Готовые блоки">
+    Добавляйте в сгенерированный код готовые блоки — индикаторы, источники данных или правила выставления заявок. Окружающий код будет обновлён с учётом выбранного блока. Так можно использовать дополнительные возможности, не создавая стратегию на Python с нуля.
   </Tab>
-  <Tab title="Full code">
-    Write and edit the strategy's Python directly against the Ziplime/Zipline API, with no AI in the loop. This is the level for users who want full control — custom data handling, custom order logic, or code brought over from another platform.
+  <Tab title="Полный код">
+    Пишите и редактируйте код стратегии на Python напрямую через API Ziplime/Zipline, без участия ИИ. Этот уровень подходит, когда нужен полный контроль: собственная обработка данных, нестандартная логика заявок или код, перенесённый с другой платформы.
   </Tab>
 </Tabs>
 
-All three levels produce the same kind of artifact: a Python strategy that runs on the same engine, whether it was typed by hand or generated from a chat description.
+На каждом уровне результатом становится стратегия на Python для одного и того же движка — независимо от того, написан код вручную или сгенерирован по описанию в чате. Для реального выставления заявок через брокерский контур Финама используется [Finam Trade API](https://api.finam.ru/).

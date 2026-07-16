@@ -1,22 +1,22 @@
 ---
-title: "Market Data"
-description: "Reading current values and trailing history through the data object"
+title: "Рыночные данные"
+description: "Получение текущих значений и исторических окон через объект data"
 ---
 
-`data` is a `BarData` object passed to `handle_data`, scheduled callbacks, and `before_trading_start`. It gives you current values and trailing history from the market data source and optional custom data sources.
+`data` — объект `BarData`, который передаётся в `handle_data`, запланированные функции обратного вызова и `before_trading_start`. Через него доступны текущие значения и исторические окна из источника рыночных данных, а также из необязательных пользовательских источников.
 
-Ziplime data access is async and returns Polars data frames.
+Доступ к данным в Ziplime асинхронный; методы возвращают DataFrame библиотеки Polars.
 
 ```python
 current = await data.current(assets=[asset], fields=["close"])
 history = await data.history(assets=[asset], fields=["close"], bar_count=20)
 ```
 
-## Current values
+## Текущие значения
 
 ### `await data.current(assets, fields, data_source=None)`
 
-Read the latest available values at the current simulation timestamp.
+Возвращает последние доступные значения на текущий момент симуляции.
 
 ```python
 df = await data.current(
@@ -28,7 +28,7 @@ close = df["close"][0]
 volume = df["volume"][0]
 ```
 
-For multiple assets:
+Для нескольких инструментов:
 
 ```python
 df = await data.current(
@@ -40,13 +40,13 @@ for row in df.iter_rows(named=True):
     print(row.get("symbol"), row["close"], row["volume"])
 ```
 
-The exact identifier columns depend on the loaded data source, but OHLCV fields are read by name.
+Точный состав столбцов-идентификаторов зависит от загруженного источника данных, но поля OHLCV запрашиваются по имени.
 
-## Historical windows
+## Исторические окна
 
 ### `await data.history(assets, bar_count, frequency=timedelta(days=1), fields=None, data_source=None)`
 
-Read a trailing window ending before the current bar.
+Возвращает историческое окно, которое заканчивается перед текущим баром.
 
 ```python
 import datetime
@@ -62,7 +62,7 @@ closes = hist["close"].to_numpy()
 sma_50 = closes.mean()
 ```
 
-The current implementation calls the data source with `include_end_date=False`, so `history` is best used for completed previous bars. If your signal needs the current bar too, read it separately with `data.current(...)`.
+Текущая реализация вызывает источник данных с `include_end_date=False`, поэтому `history` лучше использовать для уже завершённых предыдущих баров. Если для сигнала нужен и текущий бар, запросите его отдельно через `data.current(...)`.
 
 ```python
 hist = await data.history(
@@ -78,33 +78,35 @@ current = await data.current(
 window = list(hist["close"]) + [current["close"][0]]
 ```
 
-## Fields
+## Поля
 
-Common market-data fields:
+Часто используемые поля рыночных данных:
 
-| Field | Meaning |
+| Поле | Значение |
 | --- | --- |
-| `"open"` | Bar open price |
-| `"high"` | Bar high price |
-| `"low"` | Bar low price |
-| `"close"` | Bar close price |
-| `"volume"` | Bar volume |
-| `"price"` | Last known price, when supported by the data source |
-| `"last_traded"` | Last traded datetime, when supported by the data source |
+| `"open"` | Цена открытия бара |
+| `"high"` | Максимальная цена бара |
+| `"low"` | Минимальная цена бара |
+| `"close"` | Цена закрытия бара |
+| `"volume"` | Объём бара |
+| `"price"` | Последняя известная цена, если поддерживается источником данных |
+| `"last_traded"` | Дата и время последней сделки, если поддерживается источником данных |
 
-Custom data bundles can expose additional fields. Pass the bundle name through `data_source` if you need a non-default source:
+Пользовательские пакеты данных могут предоставлять дополнительные поля. Чтобы обратиться не к источнику по умолчанию, передайте имя пакета в `data_source`:
 
 ```python
 fundamentals = await data.current(
     assets=[context.asset],
     fields=["market_cap", "pe_ratio"],
-    data_source="limex_us_fundamental_data",
+    data_source="finam_ru_fundamental_data",
 )
 ```
 
-## Working with Polars
+Значение `data_source` должно совпадать с именем источника, настроенного в вашем российском контуре.
 
-Ziplime returns `polars.DataFrame`, so normal Polars operations apply.
+## Работа с Polars
+
+Ziplime возвращает `polars.DataFrame`, поэтому доступны обычные операции Polars.
 
 ```python
 import polars as pl
@@ -121,32 +123,32 @@ summary = hist.group_by("symbol").agg(
 )
 ```
 
-For one asset and one field, the most common extraction is:
+Для одного инструмента и одного поля чаще всего используют такой вариант:
 
 ```python
 df = await data.current(assets=[asset], fields=["close"])
 close = df["close"][0]
 ```
 
-## Data clock helpers
+## Время в data
 
-`data.current_dt` returns the current simulation datetime.
+`data.current_dt` возвращает текущие дату и время симуляции.
 
 ```python
 dt = data.current_dt
 ```
 
-`data.current_session` returns the current trading session label.
+`data.current_session` возвращает метку текущей торговой сессии.
 
 ```python
 session = data.current_session
 ```
 
-## Tradability checks
+## Проверка доступности торговли
 
-`data.can_trade(assets)` exists for Zipline compatibility and is intended to check asset liveness, exchange hours, restrictions, and available price data.
+Метод `data.can_trade(assets)` сохранён для совместимости с Zipline и предназначен для проверки активности инструмента, торговых часов биржи, ограничений и наличия ценовых данных.
 
-For portable strategy code in the current Ziplime runtime, prefer checking the data you actually need before ordering:
+Чтобы код стратегии был переносимым в текущей среде Ziplime, перед отправкой заявки лучше проверить именно те данные, которые ему нужны:
 
 ```python
 current = await data.current(assets=[asset], fields=["close", "volume"])

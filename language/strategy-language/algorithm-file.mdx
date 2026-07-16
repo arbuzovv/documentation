@@ -1,18 +1,18 @@
 ---
-title: "Algorithm File"
-description: "Lifecycle functions and file structure for a Ziplime strategy"
+title: "Файл алгоритма"
+description: "Функции жизненного цикла и структура файла стратегии Ziplime от Финама"
 ---
 
-A Ziplime strategy is a Python file with lifecycle functions. You do not subclass anything. Define the functions Ziplime should call and keep your strategy state on `context`.
+Стратегия Ziplime от Финама — это Python-файл с функциями жизненного цикла. Создавать подкласс не нужно: определите функции, которые должен вызывать Ziplime, а состояние стратегии храните в `context`.
 
-## File skeleton
+## Каркас файла
 
 ```python
 from ziplime.finance.execution import MarketOrder
 
 
 async def initialize(context):
-    context.asset = await context.symbol("AAPL")
+    context.asset = await context.symbol("SBER")
     context.short_window = 20
     context.long_window = 100
 
@@ -41,40 +41,40 @@ async def handle_data(context, data):
 
 ## `initialize(context)`
 
-Required for most strategies. Ziplime calls it once before the first bar.
+Требуется для большинства стратегий. Ziplime вызывает эту функцию один раз перед первым баром.
 
-Use it to:
+Используйте её, чтобы:
 
-- Look up assets.
-- Store constants and mutable state on `context`.
-- Register scheduled callbacks.
-- Configure trading controls.
-- Attach pipelines.
-- Read algorithm configuration from `context.algorithm.config`.
+- Найти инструменты.
+- Сохранить константы и изменяемое состояние в `context`.
+- Зарегистрировать функции, запускаемые по расписанию.
+- Настроить торговые ограничения.
+- Подключить пайплайны.
+- Прочитать конфигурацию алгоритма из `context.algorithm.config`.
 
 ```python
 async def initialize(context):
     context.assets = [
-        await context.symbol("AAPL", mic="XNGS"),
-        await context.symbol("MSFT@XNGS"),
+        await context.symbol("SBER", mic="MISX"),
+        await context.symbol("GAZP@MISX"),
     ]
     context.max_weight = 0.25
     context.days_seen = 0
 ```
 
-Do not place orders in `initialize`. Order functions are only valid after initialization.
+Не размещайте заявки в `initialize`. Функции работы с заявками доступны только после инициализации.
 
 ## `handle_data(context, data)`
 
-Required for trading logic. Ziplime calls it on every bar according to the simulation `emission_rate`.
+Основная функция торговой логики. Ziplime вызывает её на каждом баре с периодичностью, заданной параметром симуляции `emission_rate`.
 
-Use it to:
+Используйте её, чтобы:
 
-- Read current or historical values from `data`.
-- Calculate signals.
-- Check cash, positions, and open orders.
-- Place, target, or cancel orders.
-- Record metrics for the result table.
+- Получать текущие и исторические значения из `data`.
+- Рассчитывать сигналы.
+- Проверять денежные средства, позиции и открытые заявки.
+- Размещать, приводить к целевому значению или отменять заявки.
+- Записывать метрики в итоговую таблицу.
 
 ```python
 async def handle_data(context, data):
@@ -93,17 +93,17 @@ async def handle_data(context, data):
 
 ## `before_trading_start(context, data)`
 
-Optional. Ziplime calls it once per session before normal bar processing.
+Необязательная функция. Ziplime вызывает её один раз за торговую сессию до обычной обработки баров.
 
-In the current runtime this function is called synchronously, so define it with `def`, not `async def`.
+В текущей версии среды функция вызывается синхронно, поэтому определяйте её через `def`, а не через `async def`.
 
-Use it to:
+Используйте её, чтобы:
 
-- Reset daily state.
-- Read pipeline output.
-- Prepare a universe for the day.
+- Сбросить дневное состояние.
+- Получить результат пайплайна.
+- Подготовить список инструментов на день.
 
-Do not place orders here. Order functions are explicitly disallowed during `before_trading_start`.
+Не размещайте здесь заявки: во время выполнения `before_trading_start` функции работы с заявками явно запрещены.
 
 ```python
 def before_trading_start(context, data):
@@ -115,45 +115,45 @@ def before_trading_start(context, data):
 
 ## `analyze(context, perf)`
 
-Optional. Ziplime calls it once after the simulation finishes.
+Необязательная функция. Ziplime вызывает её один раз после завершения симуляции.
 
-In the current runtime this function is called synchronously, so define it with `def`, not `async def`.
+В текущей версии среды функция вызывается синхронно, поэтому определяйте её через `def`, а не через `async def`.
 
-`perf` is the final performance table created by the executor. It includes the recorded variables you created with `context.record(...)`.
+`perf` — итоговая таблица результатов, созданная исполнителем. В неё входят переменные, записанные с помощью `context.record(...)`.
 
 ```python
 def analyze(context, perf):
     print(perf.tail())
-    print("Final portfolio value:", perf["portfolio_value"].iloc[-1])
+    print("Итоговая стоимость портфеля:", perf["portfolio_value"].iloc[-1])
 ```
 
-## Storing state
+## Хранение состояния
 
-Use attributes on `context` for anything that must persist across bars:
+Все данные, которые должны сохраняться между барами, записывайте в атрибуты `context`:
 
 ```python
 async def initialize(context):
     context.last_rebalance_date = None
     context.open_order_ids = []
-    context.assets = [await context.symbol("AAPL")]
+    context.assets = [await context.symbol("SBER")]
 
 
 async def handle_data(context, data):
     context.last_seen_dt = context.get_datetime()
 ```
 
-Avoid relying on mutable module-level globals for strategy state. They are harder to reset between runs and harder to reason about in tests.
+Не полагайтесь на изменяемые глобальные переменные модуля для хранения состояния стратегии. Их сложнее сбрасывать между запусками и анализировать в тестах.
 
-## Algorithm configuration
+## Конфигурация алгоритма
 
-If your algorithm file defines a subclass of `BaseAlgorithmConfig`, Ziplime can load it from the JSON config passed to `run_simulation(..., config_file=...)`.
+Если в файле алгоритма определён подкласс `BaseAlgorithmConfig`, Ziplime может загрузить его из JSON-конфигурации, переданной в `run_simulation(..., config_file=...)`.
 
 ```python
 from ziplime.config.base_algorithm_config import BaseAlgorithmConfig
 
 
 class AlgorithmConfig(BaseAlgorithmConfig):
-    symbols: list[str] = ["AAPL", "MSFT"]
+    symbols: list[str] = ["SBER", "GAZP"]
     target_weight: float = 0.5
 
 
@@ -163,21 +163,21 @@ async def initialize(context):
     context.target_weight = cfg.target_weight
 ```
 
-Example JSON:
+Пример JSON:
 
 ```json
 {
-  "symbols": ["AAPL", "MSFT", "NVDA"],
+  "symbols": ["SBER", "GAZP", "LKOH"],
   "target_weight": 0.33
 }
 ```
 
-## Common mistakes
+## Частые ошибки
 
-| Mistake | Fix |
+| Ошибка | Исправление |
 | --- | --- |
-| Defining `before_trading_start` as `async def` | Use plain `def before_trading_start(...)`. |
-| Defining `analyze` as `async def` | Use plain `def analyze(...)`. |
-| Forgetting `await` on `data.current`, `data.history`, or order functions | Add `await`. |
-| Placing orders in `initialize` or `before_trading_start` | Place orders in `handle_data` or scheduled callbacks. |
-| Calling target order functions repeatedly while old orders are still open | Check `context.get_open_orders(asset)` or design idempotent rebalance logic. |
+| `before_trading_start` определена через `async def` | Используйте обычную функцию `def before_trading_start(...)`. |
+| `analyze` определена через `async def` | Используйте обычную функцию `def analyze(...)`. |
+| Пропущен `await` перед `data.current`, `data.history` или функциями работы с заявками | Добавьте `await`. |
+| Заявки размещаются в `initialize` или `before_trading_start` | Размещайте заявки в `handle_data` или в функциях, запланированных через расписание. |
+| Целевые заявки повторно отправляются, пока предыдущие ещё открыты | Проверяйте `context.get_open_orders(asset)` или сделайте логику ребалансировки идемпотентной. |

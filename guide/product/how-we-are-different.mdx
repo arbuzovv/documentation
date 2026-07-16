@@ -1,33 +1,32 @@
 ---
-title: "How We're Different"
-description: "Ziplime vs. generic AI assistants and vs. other Lime Trading products"
+title: "Чем отличается Ziplime от Финама"
+description: "Сравнение Ziplime от Финама с универсальными ИИ-помощниками и самостоятельной разработкой через API"
 ---
 
-## vs. generic AI assistants (ChatGPT, Cursor, Claude Code, and similar)
+## Сравнение с универсальными ИИ-помощниками
 
-The obvious question is: "can't I just ask ChatGPT to write me a strategy?" In practice, general-purpose language models run into systematic problems specifically in trading:
+Универсальная языковая модель может написать пример торговой стратегии, но сама по себе не создаёт полноценную исследовательскую среду. При разработке особенно важно проверить следующие риски:
 
-- They tend to write naive brute-force logic that's slow and easy to get wrong.
-- They don't account for commissions and slippage, so results look good on paper but don't hold up in reality.
-- They silently use data that didn't exist yet at the time of the trade (look-ahead bias), which makes results unreliable.
-- They don't model how and in what order orders would actually be filled.
-- They produce backtest code that doesn't carry over to live trading without a rewrite.
-- They don't provide a working environment — no data, no charts, no storage of results, no execution.
+- слишком медленная или методологически неверная реализация логики;
+- отсутствие комиссий, проскальзывания и ограничений ликвидности в расчёте;
+- использование информации, которой ещё не было в момент сделки (заглядывание в будущее);
+- упрощённая модель выставления и исполнения заявок;
+- различия между кодом бэктеста и кодом для реальной торговли;
+- отсутствие согласованных данных, отчётов, хранения результатов и мониторинга.
 
-Ziplime's real value isn't the language model itself — it's **everything built around it**, to the standards of leading hedge funds: a correct engine, honest cost accounting, protection against common mistakes, one logic shared between backtest and live trading, ready-made data and metrics, and a team of specialized agents.
+Ценность Ziplime от Финама — не только в языковой модели, а в связанной рабочей среде: движке бэктестинга, модели торговых издержек, проверках типичных ошибок, данных и метриках, а также специализированных ИИ-агентах.
 
-In short: a generic AI assistant produces code that _looks_ like a strategy but can produce misleading results. Ziplime produces a methodologically sound result.
+Это не освобождает пользователя от проверки результата. ИИ может ошибаться, а реалистичный бэктест не гарантирует будущую доходность.
 
-## vs. other Lime Trading products (Lime Direct and Lime Trader)
+## Сравнение с самостоятельной разработкой на Финам Trade API
 
-These three products for active trading serve different people and don't compete with each other.
+Ziplime и [Финам Trade API](https://api.finam.ru/) решают связанные, но разные задачи.
 
-| Product | Who it's for | Main value | Typical use case |
+| Инструмент | Для кого | Основная ценность | Типичный сценарий |
 | --- | --- | --- | --- |
-| [**Lime Direct**](https://lime.co/lime-direct-api-and-fix-protocol/) | A narrow group of technical teams | Minimal latency, direct exchange access via FIX | High-frequency trading, market making, arbitrage |
-| [**Lime Trader (REST API)**](https://lime.co/rest-api-python-sdk/) | Users who build everything themselves | Flexibility and fine control, a "bare" API | Custom-built trading systems |
-| **Ziplime** | Retail investors and amateur quant traders | A ready-made AI-powered environment, low barrier to entry | Quantitative strategies on one-minute-and-above intervals |
+| **Финам Trade API** | Для разработчиков и команд, которые самостоятельно строят торговую систему | Программный доступ к данным, счёту и торговым операциям | Собственный робот, терминал, аналитический сервис или интеграция |
+| **Ziplime от Финама** | Для инвесторов, аналитиков и разработчиков, которым нужна готовая среда исследования | Создание стратегии с помощью ИИ, бэктест, анализ и подготовка запуска | Проверка количественных гипотез на инструментах российского рынка |
 
-If a customer needs minimal latency, high-frequency trading, or market making, point them to **Lime Direct**. If they want to build everything from scratch on a bare API, point them to **Lime Trader (REST API)**. Ziplime fits users for whom the idea and the math of the strategy matter more than execution speed or infrastructure.
+Если нужен полный контроль над архитектурой приложения и прямое использование методов API, логично работать с Финам Trade API. Если важнее быстрее пройти путь от идеи до воспроизводимого исследования, удобнее начать с Ziplime. Для реального исполнения Ziplime использует интеграцию с Финам Trade API; доступность конкретных операций зависит от версии продукта, прав токена и брокерского счёта.
 
-Ziplime and Lime Trader audiences can overlap, but they're different types of users: Lime Trader users like to build everything by hand, while Ziplime users want the AI to own the environment and the code. Note that for live trading, Ziplime itself uses **Lime Trader (REST API)** under the hood — it just hides all of that complexity behind a simple interface.
+Ziplime не предназначен для высокочастотных стратегий и арбитража задержек. Для таких задач требуется специализированная инфраструктура, а пригодность конкретного протокола и режима доступа нужно оценивать отдельно.
