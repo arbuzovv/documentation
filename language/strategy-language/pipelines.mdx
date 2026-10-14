@@ -32,7 +32,7 @@ async def initialize(context):
     context.attach_pipeline(make_pipeline(), "signals")
 
 
-def before_trading_start(context, data):
+async def before_trading_start(context, data):
     context.signals = context.pipeline_output("signals")
 ```
 
@@ -150,7 +150,7 @@ pipe = Pipeline(
 Метод `context.pipeline_output(name)` доступен после инициализации.
 
 ```python
-def before_trading_start(context, data):
+async def before_trading_start(context, data):
     output = context.pipeline_output("signals")
     context.todays_assets = list(output.index)
 ```
