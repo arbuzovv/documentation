@@ -1,0 +1,85 @@
+---
+title: "Реальная торговля через Финам"
+description: "Тот же файл стратегии торгует на счёте в Финаме через Finam Trade API"
+---
+
+Исполнение в Ziplime скрыто за одним интерфейсом биржи. В бэктесте работает `SimulationExchange`, а для реальной торговли [zipfinam](https://github.com/arbuzovv/zipFinam) подставляет `FinamExchange` и запускает **тот же файл стратегии**. Заявки уходят на ваш счёт в Финаме через [Finam Trade API](https://api.finam.ru/).
+
+<Warning>
+  Реальная торговля выставляет настоящие заявки. Она запускается из вашего терминала или задания, но никогда не через локальный MCP-сервер — у него намеренно нет инструмента для заявок.
+</Warning>
+
+## Установка
+
+```bash
+pip install "zipfinam[live]"
+```
+
+## Учётные данные и счёт
+
+| Переменная | Значение |
+| --- | --- |
+| `GRPC_TOKEN` | Токен Trade API: котировки, бары и размер лота |
+| `FINAM_TRADE_TOKEN` | Токен счёта, на котором исполняются заявки |
+| `FINAM_ACCOUNT_ID` | Номер этого счёта |
+| `FINAM_TRADE_URL` | Куда уходят заявки: по умолчанию в примерах — учебный счёт [Финам Арены](https://api.finam.ru/arena/) (`https://arena.finam.ru`), для реального счёта — `https://api.finam.ru` |
+
+Арена и боевой Trade API работают по одному протоколу, разница только в адресе. Начинайте с Арены и переключайтесь на реальный счёт осознанно.
+
+## Запуск
+
+Реальная торговля запускается через `run_simulation_iter` — тот же движок, что и в бэктесте, но с часами реального времени и биржей Финама:
+
+```python
+import datetime
+import os
+
+from ziplime.core.run_simulation import run_simulation_iter
+from ziplime.gens.domain.realtime_clock import RealtimeClock
+from ziplime.utils.calendar_utils import get_calendar
+from zipfinam.exchanges import FinamExchange
+
+CAPITAL = 100_000.0
+
+
+async def run_live(asset_service, bundle):
+    calendar = get_calendar("XMOS")
+    now = datetime.datetime.now(tz=calendar.tz)
+    clock = RealtimeClock(trading_calendar=calendar, start_date=now,
+                          emission_rate=datetime.timedelta(minutes=1))
+
+    exchange = FinamExchange(
+        name="finam", canonical_name="finam", country_code="RU",
+        asset_service=asset_service, trading_calendar=calendar, data_source=bundle, clock=clock,
+        finam_arena_server_url=os.environ.get("FINAM_TRADE_URL", "https://arena.finam.ru"),
+        authorization_token=os.environ["FINAM_TRADE_TOKEN"],
+        account_id=os.environ["FINAM_ACCOUNT_ID"],
+        finam_api_server_url="https://api.finam.ru",   # котировки, бары и лоты
+        finam_api_token=os.environ["GRPC_TOKEN"],
+        start_cash_balance=CAPITAL, capital_limit=CAPITAL, is_default=True,
+    )
+
+    async for status in run_simulation_iter(
+            start_date=now, end_date=now + datetime.timedelta(days=365),
+            trading_calendar="XMOS", algorithm_file="strategy.py", total_cash=CAPITAL,
+            market_data_source=bundle, custom_data_sources=[],
+            emission_rate=datetime.timedelta(minutes=1), stop_on_error=True,
+            asset_service=asset_service, clock=clock, exchange=exchange):
+        for row in await exchange.refresh_order_states():   # что стало с заявками этого тика
+            print(row)
+```
+
+`asset_service` и `bundle` готовятся так же, как для бэктеста: бандл даёт историю для индикаторов на первом тике, а свежие бары приходят от Финама. Полный рабочий скрипт — [`examples/run_live_finam.py`](https://github.com/arbuzovv/zipFinam/blob/main/examples/run_live_finam.py) в репозитории zipfinam.
+
+## Что делает адаптер
+
+- **Стратегии выделяется капитал, а не весь счёт.** С `capital_limit` вызов `order_target_percent(0.5)` означает половину бюджета стратегии, а не половину брокерского счёта.
+- **Лоты.** Объём округляется вниз до целых лотов (GAZP — по 10 бумаг). Если размер лота неизвестен, заявка не отправляется вовсе: наугад ничего не торгуется. Остаток меньше лота не отправляется.
+- **Принятая заявка ≠ исполненная.** После каждого тика статус заявок запрашивается у брокера через `refresh_order_states()`, и отклонённая заявка отмечается как ошибка, а не как успех.
+- Котировки, бары и размеры лотов всегда берутся из Trade API. Есть и вариант биржи поверх gRPC — `FinamGrpcExchange`.
+
+## Перед запуском на реальном счёте
+
+- Проведите бэктест с исполнением на следующем баре и реальной комиссией (`equity_commission=PerDollar(...)`), а не с нулевой комиссией CLI по умолчанию.
+- Убедитесь, что каждый `TICKER@MIC`, которым вы торгуете, находится в базе инструментов.
+- Сначала прогоните стратегию на Арене, затем переходите на реальный счёт с небольшим `capital_limit`.
