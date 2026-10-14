@@ -3,9 +3,7 @@ title: "Рыночные данные"
 description: "Получение текущих значений и исторических окон через объект data"
 ---
 
-`data` — объект `BarData`, который передаётся в `handle_data`, запланированные функции обратного вызова и `before_trading_start`. Через него доступны текущие значения и исторические окна из источника рыночных данных, а также из необязательных пользовательских источников.
-
-Доступ к данным в Ziplime асинхронный; методы возвращают DataFrame библиотеки Polars.
+`data` — объект `BarData`, который передаётся в `handle_data`, функции по расписанию и `before_trading_start`. Каждое чтение асинхронное и возвращает DataFrame **Polars** со столбцами `date`, `sid` и запрошенными полями.
 
 ```python
 current = await data.current(assets=[asset], fields=["close"])
@@ -16,7 +14,7 @@ history = await data.history(assets=[asset], fields=["close"], bar_count=20)
 
 ### `await data.current(assets, fields, data_source=None)`
 
-Возвращает последние доступные значения на текущий момент симуляции.
+Последние доступные значения на текущий момент симуляции.
 
 ```python
 df = await data.current(
@@ -28,25 +26,22 @@ close = df["close"][0]
 volume = df["volume"][0]
 ```
 
-Для нескольких инструментов:
+Для нескольких инструментов сопоставляйте строки по `sid`:
 
 ```python
-df = await data.current(
-    assets=context.assets,
-    fields=["close", "volume"],
-)
-
-for row in df.iter_rows(named=True):
-    print(row.get("symbol"), row["close"], row["volume"])
+df = await data.current(assets=context.stocks, fields=["close"])
+prices = dict(zip(df["sid"].to_list(), df["close"].to_list()))
+price = prices.get(context.stocks[0].sid)
 ```
-
-Точный состав столбцов-идентификаторов зависит от загруженного источника данных, но поля OHLCV запрашиваются по имени.
 
 ## Исторические окна
 
-### `await data.history(assets, bar_count, frequency=timedelta(days=1), fields=None, data_source=None)`
+### `await data.history(assets, bar_count=None, frequency=timedelta(days=1), fields=None, data_source=None, since=None)`
 
-Возвращает историческое окно, которое заканчивается перед текущим баром.
+Окно, которое заканчивается **до** текущего бара, с поправкой на сплиты и дивиденды на текущий момент симуляции. Передайте ровно один из параметров `bar_count` или `since`:
+
+- `bar_count` — число строк. На барах это число сессий.
+- `since` — отрезок календарного времени, например `since=datetime.timedelta(days=90)`. Для событийных наборов данных обычно нужен именно он: тридцать раскрытий по одному тикеру могут растянуться на четыре года.
 
 ```python
 import datetime
@@ -57,108 +52,100 @@ hist = await data.history(
     bar_count=50,
     frequency=datetime.timedelta(days=1),
 )
-
 closes = hist["close"].to_numpy()
 sma_50 = closes.mean()
 ```
 
-Текущая реализация вызывает источник данных с `include_end_date=False`, поэтому `history` лучше использовать для уже завершённых предыдущих баров. Если для сигнала нужен и текущий бар, запросите его отдельно через `data.current(...)`.
+Окно не включает текущий бар, поэтому, если сигналу нужно текущее значение, прочитайте его отдельно:
 
 ```python
-hist = await data.history(
-    assets=[context.asset],
-    fields=["close"],
-    bar_count=19,
-)
-current = await data.current(
-    assets=[context.asset],
-    fields=["close"],
-)
-
+hist = await data.history(assets=[context.asset], fields=["close"], bar_count=19)
+current = await data.current(assets=[context.asset], fields=["close"])
 window = list(hist["close"]) + [current["close"][0]]
+```
+
+Запрашивайте столько баров, сколько нужно для разогрева всех индикаторов, и выходите, если окно короче:
+
+```python
+if len(hist) < 50:
+    return
+```
+
+## Доходность по набору инструментов
+
+### `await data.returns(assets, bar_count, field="close", data_source=None)`
+
+Доходность каждого инструмента за последние `bar_count` баров в виде `{листинг: last / first - 1}`. Одно чтение истории обслуживает весь набор. Листингов, по которым ответа нет — ещё не торгуются, нет данных, одни нули, — в результате просто нет.
+
+```python
+universe = await context.universe_symbols("IMOEX@MISX")
+momentum = await data.returns(assets=universe, bar_count=126)
+best = sorted(momentum, key=momentum.get, reverse=True)[:10]
+await context.rebalance({listing: 0.1 for listing in best})
 ```
 
 ## Поля
 
-Часто используемые поля рыночных данных:
-
 | Поле | Значение |
 | --- | --- |
-| `"open"` | Цена открытия бара |
-| `"high"` | Максимальная цена бара |
-| `"low"` | Минимальная цена бара |
-| `"close"` | Цена закрытия бара |
+| `"open"`, `"high"`, `"low"`, `"close"` | Цены бара |
 | `"volume"` | Объём бара |
-| `"price"` | Последняя известная цена, если поддерживается источником данных |
-| `"last_traded"` | Дата и время последней сделки, если поддерживается источником данных |
+| `"price"` | Последняя известная цена, если источник данных её поддерживает |
+| `"last_traded"` | Дата и время последней сделки, если источник данных их поддерживает |
 
-Пользовательские пакеты данных могут предоставлять дополнительные поля. Чтобы обратиться не к источнику по умолчанию, передайте имя пакета в `data_source`:
+Собственные источники предоставляют свои поля. Источник указывается через `data_source`. Например, данные MOEX AlgoPack из zipfinam — объём агрессивных покупок против продаж (`disb`) и оборот (`val`):
 
 ```python
-fundamentals = await data.current(
-    assets=[context.asset],
-    fields=["market_cap", "pe_ratio"],
-    data_source="finam_ru_fundamental_data",
+flow = await data.history(
+    assets=[context.sber],
+    fields=["disb", "val"],
+    bar_count=5,
+    data_source="algopack://eq/tradestats",
 )
 ```
 
-Значение `data_source` должно совпадать с именем источника, настроенного в вашем российском контуре.
+`data_source` также принимает подключённый набор данных или адрес вида `"hf://ZipLime/congress-trading/features"` — см. [«Данные на момент публикации»](/language/strategy-language/point-in-time-datasets). Расширения могут регистрировать собственные схемы адресов; схему `algopack://` для MOEX AlgoPack добавляет zipfinam.
 
 ## Работа с Polars
-
-Ziplime возвращает `polars.DataFrame`, поэтому доступны обычные операции Polars.
 
 ```python
 import polars as pl
 
-hist = await data.history(
-    assets=context.assets,
-    fields=["close", "volume"],
-    bar_count=20,
-)
+hist = await data.history(assets=context.stocks, fields=["close", "volume"], bar_count=20)
 
-summary = hist.group_by("symbol").agg(
+summary = hist.group_by("sid").agg(
     pl.col("close").mean().alias("mean_close"),
     pl.col("volume").sum().alias("total_volume"),
 )
 ```
 
-Для одного инструмента и одного поля чаще всего используют такой вариант:
+У фрейма Polars нет `.iloc`, `.loc`, `.at` и `.iat`. Используйте `df["close"][-1]`, `df["close"].to_numpy()`, `df["close"].mean()` или явно вызовите `.to_pandas()`.
+
+## Фьючерсы
+
+| Метод | Возвращает |
+| --- | --- |
+| `await data.current_contract(continuous_future)` | Контракт, который непрерывный фьючерс держит прямо сейчас, — его вы и заявляете |
+| `await data.current_chain(continuous_future)` | Активные контракты цепочки, ближайший первым |
+
+Непрерывный фьючерс — описание для чтения данных. Заявка по нему вызывает ошибку.
+
+## Доступность для торговли
+
+### `data.can_trade(assets)`
+
+Возвращает `Series` pandas из булевых значений с инструментами в индексе. Инструментом можно торговать, если он размещён и ещё не исключён из листинга или автоматически закрыт, не ограничен и его площадка открыта. Начиная с 2.11.0 площадка проверяется **по календарю самого листинга**: в дневном запуске — торговалась ли площадка в этот день, во внутридневном — открыта ли она в эту минуту. Подробнее — в разделе [«Площадки и календари»](/language/strategy-language/venues-and-calendars).
 
 ```python
-df = await data.current(assets=[asset], fields=["close"])
-close = df["close"][0]
+tradeable = data.can_trade(context.stocks)
+open_now = [stock for stock in context.stocks if tradeable[stock]]
 ```
 
-## Время в data
+`can_trade` — синхронный вызов, и он **не** проверяет наличие цены. Перед заявкой прочитайте цену через `data.current` и пропустите инструмент, если её нет или она равна нулю.
 
-`data.current_dt` возвращает текущие дату и время симуляции.
+## Часы данных
 
-```python
-dt = data.current_dt
-```
-
-`data.current_session` возвращает метку текущей торговой сессии.
-
-```python
-session = data.current_session
-```
-
-## Проверка доступности торговли
-
-Метод `data.can_trade(assets)` сохранён для совместимости с Zipline и предназначен для проверки активности инструмента, торговых часов биржи, ограничений и наличия ценовых данных.
-
-Чтобы код стратегии был переносимым в текущей среде Ziplime, перед отправкой заявки лучше проверить именно те данные, которые ему нужны:
-
-```python
-current = await data.current(assets=[asset], fields=["close", "volume"])
-
-if current.height == 0:
-    return
-
-close = current["close"][0]
-volume = current["volume"][0]
-
-if close is None or volume <= 0:
-    return
-```
+| Свойство | Возвращает |
+| --- | --- |
+| `data.current_dt` | Текущие дата и время симуляции |
+| `data.current_session` | Метку текущей торговой сессии |
