@@ -92,6 +92,7 @@
               "language/strategy-language/orders",
               "language/strategy-language/portfolio-and-recording",
               "language/strategy-language/scheduling-and-controls",
+              "language/strategy-language/futures-options-bonds",
               "language/strategy-language/pipelines",
               "language/strategy-language/zipline-migration"
             ]
