@@ -1,0 +1,118 @@
+---
+title: "Фьючерсы, опционы и облигации"
+description: "Цепочки контрактов, ролловер, опционные доски и греки, аналитика облигаций — в одном портфеле"
+---
+
+Акции, фьючерсы, опционы и облигации делят один денежный баланс, один учёт и один бандл. Стратегия на нескольких классах активов — обычный файл алгоритма. Готовые примеры лежат в [`examples/futures`](https://github.com/Limex-com/ziplime/tree/master/examples/futures), [`examples/options`](https://github.com/Limex-com/ziplime/tree/master/examples/options), [`examples/bonds`](https://github.com/Limex-com/ziplime/tree/master/examples/bonds) и [`examples/cross_asset`](https://github.com/Limex-com/ziplime/tree/master/examples/cross_asset) репозитория Ziplime.
+
+<Note>
+  Справочник Финама в zipfinam сейчас импортирует только акции и фонды — фьючерсы и опционы при загрузке пропускаются. Календарь срочного рынка Мосбиржи (`RTSX`, расписание FORTS с вечерней сессией) zipfinam уже регистрирует, но данные по фьючерсам Мосбиржи нужно загружать из собственного источника. Примеры ниже используют американские контракты, для которых данные есть в Yahoo Finance.
+</Note>
+
+## Фьючерсы
+
+### Листинги и контракты
+
+**Листинг** — то, что вы заявляете и оцениваете. **Контракт** (`FuturesContract`) хранит спецификацию — множитель, экспирацию — и доступен через `listing.asset`.
+
+| Метод | Возвращает |
+| --- | --- |
+| `await context.futures_chain(root, mic=None)` | Цепочку в виде листингов, упорядоченных по экспирации. Элемент 0 — ближайший; исполненные поставки включены |
+| `await context.front_contract(root, roll_before_days=0, mic=None)` | Ближайший контракт, который ещё будет обращаться через `roll_before_days` дней, или `None` |
+| `await context.futures_symbol(symbol, mic=None)` | Один листинг по тикеру, например `"CLX26"` |
+| `await context.future_symbol(symbol, mic=None)` | `FuturesContract` за листингом — не торгуется |
+| `await context.continuous_future(root, offset=0, roll="volume", adjustment="mul")` | Описание непрерывного фьючерса для чтения данных |
+
+### Ролловер
+
+`front_contract` — одновременно выбор контракта и ролловер: как только удерживаемый контракт перестаёт проходить проверку `roll_before_days`, функция возвращает следующую поставку, и вы переходите в неё, заявляя то, что она вернула.
+
+```python
+from ziplime.finance.execution import MarketOrder
+
+
+async def initialize(context):
+    context.held = None
+
+
+async def handle_data(context, data):
+    front = await context.front_contract("CL", roll_before_days=5)
+    if front is None:
+        return
+    if context.held is not None and context.held != front:
+        await context.order_target(context.held, 0, style=MarketOrder())
+    await context.order_target(front, 1, style=MarketOrder())
+    context.held = front
+```
+
+Непрерывный фьючерс нужен для чтения данных. Заявка по нему вызывает ошибку — заявляйте `await data.current_contract(cf)`.
+
+### Размер позиции
+
+Размер фьючерсной позиции считается от номинала: `цена × множитель × количество`.
+
+| Метод | Возвращает |
+| --- | --- |
+| `context.notional_exposure(asset, amount, price)` | Номинал `amount` контрактов |
+| `context.contracts_for_notional(asset, notional, price)` | Целое число контрактов, ближайшее к номиналу, с округлением к нулю |
+| `context.futures_margin_requirement(maintenance=False)` | Маржу, которую требует портфель |
+
+```python
+quotes = await data.current(assets=[front], fields=["price"])
+price = quotes["price"][0]
+contracts = context.contracts_for_notional(
+    asset=front, notional=context.portfolio.portfolio_value * 0.5, price=price,
+)
+```
+
+Открытие фьючерсной позиции не списывает денежные средства; вариационная маржа начисляется ежедневно в обе стороны. Комиссия — `PerContract` плюс биржевые сборы по базовому тикеру.
+
+<Warning>
+  Yahoo не сообщает объём во многих сессиях по фьючерсам, а симуляция не исполняет заявку на баре без сделок — заявка может исполняться несколько сессий. Кроме того, Yahoo удаляет истёкшие контракты, поэтому цепочка начинается с сегодняшнего дня. Прежде чем делать выводы по фьючерсным данным Yahoo, прочитайте `examples/futures/README.md`.
+</Warning>
+
+## Опционы
+
+Для оценки и греков нужен `ziplime[options]`.
+
+| Метод | Возвращает |
+| --- | --- |
+| `await context.option_chain(underlying, expiration_date=None, mic=None)` | `OptionChain`. `expiration_date` по умолчанию — **сегодня**, то есть доска 0DTE |
+| `await context.option_symbol(symbol, mic=None)` | Один листинг по символу OCC, например `"SPY240614C00523000"` |
+| `context.time_to_expiry(asset)` | Время до закрытия сессии экспирации, в годах |
+| `await context.option_greeks(asset, volatility=None, rate=0.0, amount=0.0)` | Цену и греки; `amount` пересчитывает их на позицию |
+
+Выбор из доски:
+
+```python
+from ziplime.assets.domain.option_type import OptionType
+
+chain = await context.option_chain(context.underlying)
+call = chain.atm(spot=spot, option_type=OptionType.CALL)
+put = chain.nearest_delta(
+    0.20, OptionType.PUT,
+    spot=spot, years_to_expiry=context.time_to_expiry(chain.puts[0]), volatility=0.18,
+)
+```
+
+`nearest_delta` принимает дельту по модулю (`0.20` для 20-дельтового пута) и считает дельту по Блэку — Шоулзу с переданной волатильностью. Ближе к закрытию в день экспирации почти у всех контрактов дельта равна 0 или 1, поэтому там выбирайте через `strike_offset`.
+
+У `OptionChain` также есть `calls`, `puts`, `strikes`, `at_strike`, `nearest_strike` и `strike_offset`.
+
+- Стратегия 0DTE вызывает `option_chain` каждую сессию: контракты листингуются заново каждый день.
+- `option_greeks` берёт поле `implied_volatility` контракта, если оно есть в данных, и вызывает ошибку, если его нет, — вместо того чтобы выдумывать волатильность. В остальных случаях передавайте `volatility=` явно.
+- Опционы рассчитываются по внутренней стоимости. Комиссия по умолчанию — `PerOptionContract`.
+
+## Облигации
+
+| Метод | Возвращает |
+| --- | --- |
+| `await context.bond_symbol(symbol, mic=None)` | Один листинг облигации |
+| `await context.bond_schedule(asset)` | События по купонам, амортизации, погашению и офертам, по датам |
+| `await context.accrued_interest(asset, dt=None)` | Накопленный купонный доход (НКД) — что покупатель платит сверх котировки |
+| `await context.bond_face_value(asset, dt=None)` | Непогашенный номинал после амортизации |
+| `await context.bond_dirty_price(asset, quoted_price, dt=None)` | «Грязную» цену: чистая цена плюс НКД |
+| `await context.bond_current_yield(asset, quoted_price, dt=None)` | Текущую доходность: годовой купон к стоимости покупки |
+| `await context.bond_yield_to_maturity(asset, quoted_price, dt=None)` | Простую годовую доходность при удержании до погашения |
+
+Купоны зачисляются в денежные средства, амортизация уменьшает номинал, погашение идёт по номиналу. Комиссия по умолчанию — `PerBondTurnover`. Учёт амортизации и оферт делает модель удобной для рублёвых облигаций, если их данные есть в вашем источнике.

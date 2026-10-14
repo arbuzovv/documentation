@@ -3,143 +3,135 @@ title: "API объекта context"
 description: "Поиск инструментов, торговля, расписание и проверка состояния через context"
 ---
 
-`context` — постоянный объект алгоритма, который передаётся в функции жизненного цикла. Храните в нём состояние стратегии и вызывайте его методы, чтобы находить инструменты, торговать, планировать задачи, проверять состояние портфеля и настраивать ограничения.
-
-## Прямые вызовы через context
-
-Предпочтительно вызывать методы непосредственно у `context`:
+`context` — постоянный объект алгоритма, который передаётся во все функции жизненного цикла. Храните в нём состояние стратегии и вызывайте его методы, чтобы находить инструменты, торговать, планировать действия, проверять портфель и задавать ограничения.
 
 ```python
 from ziplime.finance.execution import MarketOrder
 
-asset = await context.symbol("SBER")
+asset = await context.symbol("SBER@MISX")
 await context.order_target_percent(asset, 0.25, style=MarketOrder())
 ```
 
-Ziplime также предоставляет функции в стиле Zipline через `ziplime.api`, но в асинхронном коде алгоритма прямые вызовы `context` читаются яснее.
+Ziplime также предоставляет функции в стиле Zipline через `ziplime.api`, но в асинхронном коде вызовы `context` читаются яснее.
 
 ## Поиск инструментов
 
 ### `await context.symbol(symbol, mic=None, asset_type=AssetType.EQUITY)`
 
-Находит биржевой инструмент по тикеру.
+Находит биржевой листинг по тикеру. Если его нет, вызывает `SymbolNotFound`.
 
 ```python
-context.sber = await context.symbol("SBER")
-context.gazp = await context.symbol("GAZP@MISX")
-context.lkoh = await context.symbol("LKOH", mic="MISX")
+context.sber = await context.symbol("SBER@MISX")
+context.gazp = await context.symbol("GAZP", mic="MISX")
+context.lkoh = await context.symbol("LKOH")
 ```
 
-Если строка символа содержит `@`, часть после `@` интерпретируется как MIC-код биржи.
+Тикер без MIC — обычная форма. `TICKER@MIC` используйте, когда точно знаете площадку: выдуманный MIC — частая причина ошибки «инструмент не найден». Если тикер есть на нескольких площадках, укажите MIC: для акций Мосбиржи это `MISX`, для срочного рынка — `RTSX`.
 
-### Несколько символов
+### `await context.symbols(*symbols)`
 
-Рекомендуемый вариант:
+Несколько поисков сразу. Возвращает список листингов.
 
 ```python
-SYMBOLS = ["SBER", "GAZP", "LKOH"]
-
-
-async def initialize(context):
-    context.assets = [await context.symbol(symbol) for symbol in SYMBOLS]
+context.stocks = await context.symbols("SBER@MISX", "GAZP@MISX", "LKOH@MISX")
 ```
 
-Метод `context.symbols(*symbols)` сохранён для совместимости, но в текущей реализации возвращает список awaitable-объектов. Если вы его используете, соберите результаты через `gather` или дождитесь каждого объекта отдельно:
+### `await context.universe_symbols(name, dt=None, mic=None, tradeable=True)`
+
+Состав именованного набора инструментов в виде листингов, доступных для торговли, упорядоченных по тикеру.
 
 ```python
-import asyncio
-
-context.assets = await asyncio.gather(*context.symbols("SBER", "GAZP", "LKOH"))
+moex = await context.universe_symbols("IMOEX@MISX")
 ```
 
-### `await context.symbols_universe(name, dt=None)`
+- `dt` по умолчанию — текущая сессия, поэтому вызов на каждой ребалансировке следует за изменениями состава, а не замораживает состав, прочитанный в `initialize`.
+- Возвращаются только участники, данные по которым действительно есть в рыночных данных запуска. Передайте `tradeable=False`, чтобы получить полный справочный список.
+- `NAME@MIC` или `mic=` закрепляет одну площадку — полезно, когда эмитент торгуется на нескольких рынках.
 
-Загружает именованный набор символов из сервиса инструментов.
-
-```python
-context.moex_liquid = await context.symbols_universe(name="MOEX_LIQUID")
-```
-
-Имя набора должно быть зарегистрировано в сервисе инструментов. Если `dt` не указан, Ziplime использует текущие дату и время симуляции.
+`await context.symbols_universe(name, dt=None)` возвращает сами членства (эмитентов, а не листинги). Для всего, что нужно оценить или купить, используйте `universe_symbols`.
 
 ### `await context.sid(sid)`
 
 Находит инструмент по числовому SID.
 
-```python
-asset = await context.sid(12345)
-```
+### Фьючерсы, опционы и облигации
 
-### `await context.future_symbol(symbol, exchange_name=None)`
+| Метод | Возвращает |
+| --- | --- |
+| `await context.futures_chain(root, mic=None)` | Цепочку контрактов как листинги, упорядоченные по экспирации (элемент 0 — ближайший) |
+| `await context.front_contract(root, roll_before_days=0, mic=None)` | Ближайший контракт, который ещё будет обращаться через `roll_before_days` дней |
+| `await context.futures_symbol(symbol, mic=None)` | Один фьючерсный **листинг** по тикеру — его вы и заявляете |
+| `await context.future_symbol(symbol, mic=None)` | `FuturesContract` за листингом — спецификация, а не торгуемый инструмент |
+| `await context.continuous_future(root, offset=0, roll="volume", adjustment="mul")` | Описание непрерывного фьючерса для чтения данных |
+| `await context.option_chain(underlying, expiration_date=None, mic=None)` | Опционную доску; по умолчанию — экспирация сегодня (0DTE) |
+| `await context.option_symbol(symbol, mic=None)` | Один опционный листинг по символу OCC |
+| `await context.bond_symbol(symbol, mic=None)` | Один листинг облигации |
 
-Находит фьючерсный контракт.
+Полный набор, включая расчёт размера позиции, греки и аналитику облигаций, — в разделе [«Фьючерсы, опционы и облигации»](/language/strategy-language/futures-options-bonds).
 
-```python
-contract = await context.future_symbol("SiM5", exchange_name="MOEX")
-```
+## Время и календарь
 
-Значение `exchange_name` должно совпадать с именем биржи в конфигурации запуска.
+| Метод | Возвращает |
+| --- | --- |
+| `context.get_datetime()` | Текущие дату и время симуляции. То же значение хранится в `context.simulation_dt` |
+| `context.is_week_start()` | `True` в первую торговую сессию недели |
+| `context.is_month_start()` | `True` в первую торговую сессию месяца |
 
-## Время и конфигурация
-
-### `context.get_datetime()`
-
-Возвращает текущие дату и время симуляции.
-
-```python
-now = context.get_datetime()
-```
-
-`context.simulation_dt` содержит ту же текущую временную метку симуляции.
-
-### `context.algorithm.config`
-
-Предоставляет доступ к типизированной конфигурации алгоритма, загруженной из JSON.
+`is_week_start()` и `is_month_start()` читают календарь симуляции, поэтому праздники учитываются. Это обычные вызовы, без `await`:
 
 ```python
-async def initialize(context):
-    cfg = context.algorithm.config
-    context.max_weight = cfg.max_weight
+async def handle_data(context, data):
+    if not context.is_month_start():
+        return
+    ...
 ```
 
-Шаблон класса конфигурации описан в разделе [«Файл алгоритма»](/language/strategy-language/algorithm-file#конфигурация-алгоритма).
+## Наборы данных
+
+### `await context.huggingface_dataset(repo_id, config=None, revision=None, fields=None, start_date=None, end_date=None, name=None)`
+
+Подключает набор данных на момент публикации с Hugging Face Hub; затем его читают через `data.history(..., data_source=...)`. Нужен `ziplime[huggingface]`. Подробнее — в разделе [«Данные на момент публикации»](/language/strategy-language/point-in-time-datasets).
+
+## Конфигурация
+
+`context.algorithm.config` хранит типизированную конфигурацию, загруженную из JSON. Подробнее — в разделе [«Файл алгоритма»](/language/strategy-language/algorithm-file).
 
 ## Доступные методы
 
-| Метод | Нужен `await`? | Основное назначение |
+| Метод | `await`? | Основное назначение |
 | --- | --- | --- |
-| `symbol(symbol, mic=None, asset_type=...)` | Да | Найти акцию или другой биржевой инструмент. |
-| `symbols(*symbols, **kwargs)` | См. примечание | Вспомогательный метод совместимости; предпочтительнее списковое включение. |
-| `symbols_universe(name, dt=None)` | Да | Загрузить именованный набор инструментов. |
-| `sid(sid)` | Да | Найти инструмент по числовому идентификатору. |
-| `future_symbol(symbol, exchange_name=None)` | Да | Найти фьючерсный контракт. |
-| `get_datetime()` | Нет | Получить текущие дату и время симуляции. |
-| `record(**kwargs)` | Нет | Добавить пользовательские столбцы в итоговую таблицу. |
-| `schedule_function(func, date_rule=None, time_rule=None, ...)` | Нет | Зарегистрировать функцию обратного вызова. |
-| `order(asset, amount, style, exchange_name=None)` | Да | Купить или продать фиксированное количество. |
-| `order_percent(asset, percent, style, exchange_name=None)` | Да | Изменить позицию на долю текущей стоимости портфеля. |
-| `order_target(asset, target, style, exchange_name=None)` | Да | Привести позицию к целевому числу акций или контрактов. |
-| `order_target_value(asset, target, style, exchange_name=None)` | Да | Привести позицию к целевой денежной экспозиции в валюте портфеля. |
-| `order_target_percent(asset, target, style, exchange_name=None)` | Да | Привести позицию к целевому весу в портфеле. |
-| `get_open_orders(asset=None)` | Нет | Получить открытые заявки. |
-| `get_order(order_id, exchange_name)` | Нет | Получить конкретную заявку. |
-| `cancel_order(order_id, exchange_name, relay_status=True)` | Да | Отменить открытую заявку. |
-| `set_long_only()` | Нет | Запретить короткие позиции. |
-| `set_max_leverage(max_leverage)` | Нет | Ограничить плечо счёта. |
-| `set_max_position_size(...)` | Нет | Ограничить размер позиции. |
-| `set_max_order_size(...)` | Нет | Ограничить размер одной заявки. |
-| `set_max_order_count(max_count)` | Нет | Ограничить число заявок за день. |
-| `attach_pipeline(pipeline, name, ...)` | Нет | Зарегистрировать пайплайн во время инициализации. |
-| `pipeline_output(name)` | Нет | Получить результаты подключённого пайплайна после инициализации. |
+| `symbol(symbol, mic=None, asset_type=...)` | Да | Найти листинг |
+| `symbols(*symbols)` | Да | Найти несколько листингов |
+| `universe_symbols(name, dt=None, mic=None, tradeable=True)` | Да | Торгуемые участники именованного набора |
+| `symbols_universe(name, dt=None)` | Да | Членства в наборе (эмитенты) |
+| `sid(sid)` | Да | Найти по числовому идентификатору |
+| `futures_chain`, `front_contract`, `futures_symbol`, `future_symbol` | Да | Фьючерсы |
+| `option_chain`, `option_symbol`, `option_greeks` | Да | Опционы |
+| `bond_symbol` и аналитика облигаций | Да | Облигации |
+| `huggingface_dataset(...)` | Да | Подключить набор данных на момент публикации |
+| `get_datetime()` | Нет | Текущие дата и время симуляции |
+| `is_week_start()`, `is_month_start()` | Нет | Фильтры по календарю |
+| `record(**kwargs)` | Нет | Добавить столбцы в таблицу результатов |
+| `schedule_function(func, date_rule=None, time_rule=None, half_days=True, calendar=None)` | Нет | Зарегистрировать функцию по расписанию |
+| `order(asset, amount, style, account_id=None, exchange_name=None)` | Да | Фиксированное количество |
+| `order_value(asset, value, limit_price=None, stop_price=None, style=None, exchange_name=None)` | Да | Фиксированная сумма в валюте портфеля |
+| `order_percent(asset, percent, style, exchange_name=None)` | Да | Доля стоимости портфеля в дополнение к позиции |
+| `order_target(asset, target, style, exchange_name=None)` | Да | Целевое количество |
+| `order_target_value(asset, target, style, exchange_name=None)` | Да | Целевая стоимость позиции |
+| `order_target_percent(asset, target, style, exchange_name=None, reserved_percentage_for_fees=0.05)` | Да | Целевой вес в портфеле |
+| `rebalance(weights, style=None, exchange_name=None)` | Да | Держать ровно эти веса, всё остальное закрыть |
+| `get_open_orders(asset=None)` | Нет | Рабочие заявки |
+| `get_order(order_id, exchange_name)` | Нет | Одна заявка |
+| `cancel_order(order_id, exchange_name, relay_status=True)` | Да | Отменить заявку |
+| `set_long_only()`, `set_max_leverage(...)`, `set_max_position_size(...)`, `set_max_order_size(...)`, `set_max_order_count(...)`, `set_asset_restrictions(...)` | Нет | Торговые ограничения |
+| `set_cancel_policy(policy)` | Нет | Политика отмены открытых заявок |
+| `attach_pipeline(pipeline, name, ...)` | Нет | Зарегистрировать пайплайн в `initialize` |
+| `pipeline_output(name)` | Нет | Получить результаты пайплайна |
 
 ## Имена бирж
 
-Большинство методов работы с заявками принимает необязательный параметр `exchange_name`. Если он не указан, Ziplime использует биржу по умолчанию из конфигурации запуска симуляции. В примерах для российского контура используется имя `"MOEX"`.
+Большинство методов работы с заявками принимает необязательный параметр `exchange_name`. Если он не указан, движок использует биржу запуска по умолчанию: в бэктесте это `"LIME"`, если вы не передали другое имя через `default_exchange_name` в `run_simulation`, а в реальной торговле через Финам — имя, заданное при создании `FinamExchange` (в примерах — `"finam"`). В примерах этой документации для бэктеста на Мосбирже используется имя `"MOEX"` — для этого передайте `default_exchange_name="MOEX"` в `run_simulation`.
 
-Указывайте имя биржи явно, если:
+Указывайте имя биржи явно, если в запуске несколько бирж, если вы получаете или отменяете заявку через `get_order` или `cancel_order` и если вызываете методы портфеля с фильтрацией по бирже.
 
-- В запуске используется несколько бирж.
-- Вы получаете или отменяете заявку через `get_order` или `cancel_order`.
-- Вызываете методы портфеля с фильтрацией по бирже.
-
-Строка `exchange_name` — это имя из конфигурации запуска, а не обязательно MIC-код. Если в вашей конфигурации задано другое имя, используйте его вместо `"MOEX"`.
+Строка `exchange_name` — это имя из конфигурации запуска, а не обязательно MIC-код.

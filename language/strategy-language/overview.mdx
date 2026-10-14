@@ -3,11 +3,11 @@ title: "Обзор"
 description: "API, доступный внутри файла алгоритма Ziplime от Финама"
 ---
 
-В этом разделе описан API, доступный внутри файла алгоритма Ziplime от Финама. Сам файл алгоритма представляет собой обычный Python-код, а Ziplime дополняет его компактным событийным API:
+Файл алгоритма — обычный модуль Python. Движок импортирует его, поэтому можно делать `import numpy`, `polars`, `talib` и всего, что установлено, а затем движок вызывает найденные функции по имени:
 
 - `context` хранит состояние стратегии и предоставляет торговые функции.
-- `data` предоставляет доступ к текущим и историческим рыночным данным.
-- Функции жизненного цикла сообщают Ziplime, когда нужно выполнить настройку, торговую логику, подготовку к сессии и анализ результатов.
+- `data` даёт доступ к текущим и историческим рыночным данным.
+- Функции жизненного цикла сообщают движку, когда выполнить настройку, торговую логику, подготовку к сессии и отчёт.
 
 Основная работа стратегии выполняется в двух функциях:
 
@@ -21,90 +21,93 @@ async def handle_data(context, data):
 
 ## Модель работы
 
-`initialize` — блок настройки. В нём находят инструменты, сохраняют параметры, регистрируют функции по расписанию и задают ограничения.
+`initialize` — блок настройки. В нём находят инструменты, сохраняют параметры, регистрируют функции по расписанию, задают ограничения и подключают наборы данных.
 
-`handle_data` — блок торговой логики. Он запускается на каждом сформированном баре, читает `data`, проверяет состояние портфеля, размещает заявки и записывает метрики.
+`handle_data` — блок торговой логики. Он запускается на каждом сформированном баре, читает `data`, проверяет состояние портфеля, выставляет заявки и записывает метрики.
 
-`before_trading_start` — необязательная функция ежедневной подготовки. Используйте её для выбора набора инструментов на день или получения результатов пайплайна. Не размещайте в ней заявки.
+`before_trading_start` — необязательная функция ежедневной подготовки. Используйте её для выбора набора инструментов на день или получения результатов пайплайна. Заявки в ней не выставляются.
 
-`analyze` — необязательная функция формирования отчёта после завершения бэктеста.
+`compute_signals` — необязательная векторная функция, которая один раз считается по всей истории до первого бара. Подробнее — в разделе [«Векторные сигналы»](/language/strategy-language/vectorized-signals).
+
+`analyze` — необязательная функция отчёта после завершения бэктеста.
 
 ## Минимальный алгоритм
 
 ```python
 from ziplime.finance.execution import MarketOrder
 
-SYMBOLS = ["SBER", "GAZP", "LKOH"]
+SYMBOLS = ["SBER@MISX", "GAZP@MISX", "LKOH@MISX"]
 
 
 async def initialize(context):
-    context.assets = [await context.symbol(symbol) for symbol in SYMBOLS]
-    context.has_rebalanced = False
+    context.stocks = [await context.symbol(symbol) for symbol in SYMBOLS]
 
 
 async def handle_data(context, data):
-    if context.has_rebalanced:
+    if not context.is_month_start():
         return
 
-    weight = 1.0 / len(context.assets)
-    for asset in context.assets:
-        await context.order_target_percent(
-            asset=asset,
-            target=weight,
-            style=MarketOrder(),
-        )
-
-    context.has_rebalanced = True
+    weight = 1.0 / len(context.stocks)
+    await context.rebalance({stock: weight for stock in context.stocks})
     context.record(target_weight=weight, cash=context.portfolio.cash)
 ```
 
 ## Основные объекты
 
-| Объект | Где доступен | Назначение |
+| Объект | Где доступен | Для чего |
 | --- | --- | --- |
 | `context` | Во всех функциях жизненного цикла | Постоянное состояние стратегии и торговый API |
-| `data` | В `handle_data`, запланированных функциях и `before_trading_start` | Текущие и исторические данные |
-| `context.portfolio` | В любое время после инициализации | Денежные средства, стоимость портфеля, позиции и доходность |
-| `context.account` | В любое время после инициализации | Показатели счёта и кредитного плеча |
-| `perf` | В `analyze(context, perf)` | Итоговая таблица результатов |
+| `data` | `handle_data`, функции по расписанию, `before_trading_start` | Текущие и исторические данные |
+| `context.portfolio` | В любой момент после инициализации | Денежные средства, стоимость портфеля, позиции, доходность |
+| `context.account` | В любой момент после инициализации | Показатели счёта, плеча и маржи |
+| `context.signals` | `handle_data`, если определена `compute_signals` | Заранее рассчитанные сигналы, обрезанные по текущему бару |
+| `perf` | `analyze(context, perf)` | Итоговая таблица результатов (DataFrame pandas) |
 
-## Простое правило для async
+## Правило для асинхронного кода
 
-Используйте `await` при вызове функций, которые загружают данные, находят инструменты, размещают или отменяют заявки:
+Всё, что обращается к движку, вызывается через `await`:
 
 ```python
 from ziplime.finance.execution import MarketOrder
 
-asset = await context.symbol("SBER")
+asset = await context.symbol("SBER@MISX")
 prices = await data.history(assets=[asset], fields=["close"], bar_count=20)
 order = await context.order_target_percent(asset, 0.25, style=MarketOrder())
 ```
 
-В текущей версии среды:
-
-| Функция | Должна быть асинхронной? | Примечание |
+| Функция | Как объявлять | Примечание |
 | --- | --- | --- |
-| `initialize(context)` | Да | Ziplime ожидает её через `await`. |
-| `handle_data(context, data)` | Да | Ziplime ожидает её через `await` на каждом баре. |
-| Запланированные функции | Да | Ziplime ожидает через `await` функции, зарегистрированные методом `schedule_function`. |
-| `before_trading_start(context, data)` | Нет | Вызывается синхронно. |
-| `analyze(context, perf)` | Нет | Вызывается синхронно после завершения запуска. |
+| `initialize(context)` | `async def` | Вызывается один раз до первого бара |
+| `handle_data(context, data)` | `async def` | Вызывается на каждом баре |
+| Функции по расписанию | `async def` | Вызываются, когда срабатывает правило |
+| `before_trading_start(context, data)` | `async def` | Ожидается, если это корутина; чтение данных внутри требует `await` |
+| `compute_signals(context, prices)` | `def` | Обычный код над массивами во фреймах pandas |
+| `analyze(context, perf)` | `def` | Вызывается синхронно после запуска |
+
+<Warning>
+  Пропущенный `await` не вызывает ошибку. Стратегия молча не выставляет заявок, и это выглядит как стратегия, которая не нашла сигнала. `check_strategy_code` в `ziplime mcp` находит пропущенные `await` до запуска.
+</Warning>
 
 ## Карта API
 
 | Задача | Основные функции |
 | --- | --- |
-| Найти инструменты | `context.symbol`, `context.sid`, `context.future_symbol`, `context.symbols_universe` |
-| Получить текущие данные | `await data.current(...)` |
-| Получить историческое окно | `await data.history(...)` |
-| Разместить заявку | `context.order`, `context.order_target`, `context.order_target_percent`, `context.order_percent`, `context.order_target_value` |
+| Найти инструменты | `context.symbol`, `context.symbols`, `context.sid`, `context.universe_symbols` |
+| Фьючерсы, опционы, облигации | `context.futures_chain`, `context.front_contract`, `context.futures_symbol`, `context.option_chain`, `context.bond_symbol` — см. [«Фьючерсы, опционы и облигации»](/language/strategy-language/futures-options-bonds) |
+| Прочитать текущие данные | `await data.current(...)` |
+| Прочитать историческое окно | `await data.history(...)` с `bar_count` или `since` |
+| Ранжировать по доходности | `await data.returns(...)` |
+| Данные на момент публикации | `context.huggingface_dataset`, `data_source="hf://..."`, `data_source="algopack://..."` — см. [«Данные на момент публикации»](/language/strategy-language/point-in-time-datasets) |
+| Выставить заявку | `context.order`, `order_value`, `order_percent`, `order_target`, `order_target_value`, `order_target_percent` |
+| Держать заданные веса | `context.rebalance(weights)` |
 | Проверить заявки | `context.get_open_orders`, `context.get_order`, `context.cancel_order` |
 | Проверить портфель | `context.portfolio`, `context.account`, вспомогательные методы портфеля |
 | Записать метрики | `context.record(...)` |
-| Запланировать функции | `context.schedule_function(...)`, `date_rules`, `time_rules` |
-| Настроить ограничения | `context.set_long_only`, `context.set_max_leverage`, `context.set_max_position_size`, `context.set_max_order_size`, `context.set_max_order_count` |
-| Использовать пайплайны | `context.attach_pipeline`, `context.pipeline_output` |
-| Перенести старый код Zipline | [«Миграция с классического Zipline»](/language/strategy-language/zipline-migration) |
+| Фильтр по календарю | `context.is_week_start()`, `context.is_month_start()` |
+| Функции по расписанию | `context.schedule_function(...)`, `date_rules`, `time_rules` |
+| Ограничения | `context.set_long_only`, `set_max_leverage`, `set_max_position_size`, `set_max_order_size`, `set_max_order_count`, `set_asset_restrictions` |
+| Пайплайны | `context.attach_pipeline`, `context.pipeline_output` |
+| Векторные индикаторы | `compute_signals`, `context.signals` |
 
 ## Рекомендуемый порядок чтения
 
@@ -114,5 +117,9 @@ order = await context.order_target_percent(asset, 0.25, style=MarketOrder())
 4. [Заявки](/language/strategy-language/orders)
 5. [Портфель и запись метрик](/language/strategy-language/portfolio-and-recording)
 6. [Расписание и ограничения](/language/strategy-language/scheduling-and-controls)
+7. [Фьючерсы, опционы и облигации](/language/strategy-language/futures-options-bonds)
+8. [Данные на момент публикации](/language/strategy-language/point-in-time-datasets)
+9. [Векторные сигналы](/language/strategy-language/vectorized-signals)
+10. [Площадки и календари](/language/strategy-language/venues-and-calendars)
 7. [Пайплайны](/language/strategy-language/pipelines)
 8. [Миграция с классического Zipline](/language/strategy-language/zipline-migration)

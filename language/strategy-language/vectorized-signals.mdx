@@ -1,0 +1,87 @@
+---
+title: "Векторные сигналы"
+description: "Индикаторы считаются один раз по всей истории, а торговля идёт по барам"
+---
+
+Пересчёт индикаторов на каждом баре — самое дорогое, что делает событийный движок: `data.history(bar_count=200)` на каждой из тысячи сессий тысячу раз перечитывает и заново усредняет двести строк. `compute_signals` выносит эту арифметику из цикла. Решения — размер позиции, ограничения, ролловер — остаются в `handle_data` и проходят через обычный блоттер, проскальзывание и комиссии.
+
+## Устройство
+
+```python
+from ziplime.finance.execution import MarketOrder
+
+FAST, SLOW = 20, 60
+WARMUP = SLOW                    # сколько баров истории нужно самому длинному индикатору
+
+
+async def initialize(context):
+    context.universe = {
+        "SBER": await context.symbol("SBER", mic="MISX"),
+        "GAZP": await context.symbol("GAZP", mic="MISX"),
+    }
+
+
+def compute_signals(context, prices):           # один раз, по всей истории
+    close = prices.close
+    return {
+        "fast": close.rolling(FAST).mean(),
+        "slow": close.rolling(SLOW).mean(),
+    }
+
+
+async def handle_data(context, data):           # по барам, как обычно
+    signals = context.signals
+    if not (signals.is_ready("fast") and signals.is_ready("slow")):
+        return
+
+    for name, listing in context.universe.items():
+        target = 0.5 if float(signals["fast"][name]) > float(signals["slow"][name]) else 0.0
+        await context.order_target_percent(listing, target, style=MarketOrder())
+```
+
+## Правила
+
+- **`context.universe` обязателен** — словарь `{имя: листинг}`, заданный в `initialize`. Ключи становятся именами столбцов в панели цен и в сигналах.
+- **`WARMUP`** на уровне модуля объявляет, сколько баров до первой сессии входит в панель. Задавайте его по *самому длинному* окну: если он слишком короткий, индикатор на старте запуска ещё будет NaN.
+- **`compute_signals` — обычный `def`.** Она получает `prices` — панель широких фреймов pandas: `prices.close`, `prices.open`, `prices.high`, `prices.low`, `prices.volume`, с временем бара в индексе и столбцом на каждое имя.
+- **Возвращайте словарь** из DataFrame pandas (столбец на имя) или Series (одно значение на бар).
+
+## Чтение сигналов
+
+`context.signals` обрезан по часам симуляции. На баре `t` нет способа получить строку `t + 1`.
+
+| Чтение | Возвращает |
+| --- | --- |
+| `context.signals["fast"]["SBER"]` | Значение на этом баре для одного имени |
+| `context.signals["spread"]` | Значение сигнала на уровне портфеля на этом баре; используйте как число |
+| `context.signals.is_ready("fast")` | `True`, как только значение — настоящее число, а не NaN периода разогрева |
+| `context.signals.history("fast", 20)` | Последние 20 баров, заканчивая текущим |
+| `context.signals.names` | Имена сигналов, которые вернула `compute_signals` |
+
+<Tip>
+  Возвращайте числа и сравнивайте их в `handle_data`, а не возвращайте `fast > slow`. Сравнение с NaN даёт `False`, поэтому булев сигнал не отличит период разогрева от настоящего «нет» — и `is_ready` тут не поможет.
+</Tip>
+
+## Проверка на заглядывание в будущее
+
+До первой заявки движок повторно запускает `compute_signals` на усечённой истории и сравнивает результаты. Скользящее среднее даёт одинаковый ответ в обоих случаях, а нормировка по всей выборке, `shift(-1)` или деление на последнее значение — нет, и запуск останавливается с `LookAheadError`:
+
+```
+Signal 'momentum' looks ahead. At bar 240 (2024-03-15) the whole-history computation
+gives 1.0, but computing from the first 240 bars alone -- all that was known then --
+gives 2.0.
+```
+
+Проверка сравнивает значения в выборочных точках среза, поэтому на практике ловит любую случайную утечку: нормировка по всей выборке и отрицательные сдвиги меняют почти каждую строку. Это пожарная сигнализация, а не доказательство.
+
+Ранжирование по строке (`close.pct_change(63).rank(axis=1)`) причинно: ранг на каждом баре использует только значения этого бара.
+
+## Наборы данных в сигналах
+
+Набор данных на момент публикации, подключённый в `initialize`, доступен как `prices.dataset(name)` с тем же индексом и столбцами `known_at` и `age_days` — когда строка была опубликована и сколько ей дней. Подробнее — в разделе [«Данные на момент публикации»](/language/strategy-language/point-in-time-datasets).
+
+## Перебор параметров
+
+Для сотен вариантов параметров `ziplime.vectorized.kernel.simulate_signals(prices, entries, exits, ...)` прогоняет сигналы через собственное векторное ядро Ziplime с теми же моделями расходов, а лучший вариант повторяется через событийный учёт со сверкой после каждого бара. Фьючерсы и опционы там не поддерживаются. Установите `ziplime[numba]`, чтобы компилировать внутренний цикл ядра.
+
+Готовые примеры — [`examples/vectorized`](https://github.com/Limex-com/ziplime/tree/master/examples/vectorized) в репозитории Ziplime: `signals_in_run.py` запускает одну и ту же стратегию векторно и по барам и сверяет их сделка за сделкой, а `sweep_then_report.py` перебирает параметры и повторяет лучший вариант.
