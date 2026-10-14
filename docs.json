@@ -95,7 +95,8 @@
               "language/strategy-language/futures-options-bonds",
               "language/strategy-language/point-in-time-datasets",
               "language/strategy-language/pipelines",
-              "language/strategy-language/zipline-migration"
+              "language/strategy-language/zipline-migration",
+              "language/strategy-language/vectorized-signals"
             ]
           },
           {
